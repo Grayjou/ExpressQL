@@ -34,7 +34,7 @@ print(condition.placeholder_pair())
 
 ```bash
 pip install expressql
-
+```
 
 ## Key Concepts
 
