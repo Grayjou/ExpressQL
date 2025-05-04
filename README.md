@@ -30,6 +30,12 @@ print(condition.placeholder_pair())
 # ('((age > ?) AND (department = ?)) OR (salary > ?)', [30, 'HR', 50000])
 ```
 
+## Installation
+
+```bash
+pip install expressql
+
+
 ## Key Concepts
 
 ### 1️⃣ Expressions & Comparisons
