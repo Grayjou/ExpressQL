@@ -93,7 +93,7 @@ SQL:
 ```sql
 LOG((salary + bonus)) > 10
 ```
-
+Easy function expressions:
 ```python
 name, SSN, birthday = cols("name","SSN", "birthday")
 average = name.CONCAT(SSN, "birthday", col("age") + 10)
@@ -101,7 +101,7 @@ average = name.CONCAT(SSN, "birthday", col("age") + 10)
 print(average.placeholder_pair())
 >>> CONCAT(SSN, birthday, age + ?) , [10]
 ```
-
+SQL:
 ```SQL
 CONCAT(name, SSN, birthday, age + 10)
 ```
