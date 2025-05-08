@@ -57,6 +57,12 @@ def extract_value(item: SQLInput) -> Any:
         return item.true_value()
     return item
 
+def _alias_str(expr: SQLExpression) -> str:
+    """Return the alias string for an SQLExpression."""
+    if expr.alias:
+        return f" AS {expr.alias.sql_string()}"
+    return ""
+
 class SQLExpression:
     """Represents an SQL expression, either a literal value, column name, or a more complex structure like sum or product."""
     
@@ -67,7 +73,8 @@ class SQLExpression:
         expression_value: Union[str, int, float, bool],
         expression_type: str = "valintue",
         auto_parse_numbers: bool = True,
-        positive: bool = True, *, inverted: bool = False
+        positive: bool = True, *, inverted: bool = False,
+        alias: SQLExpression = None,
     ):
         """
         Initialize an SQLExpression instance.
@@ -83,7 +90,6 @@ class SQLExpression:
         if expression_type not in self.VALID_TYPES:
             #sum and mul are internal types, not for user input
             raise ValueError(f"Invalid expression type: {expression_type}. Must be one of (column, value, set)")
-        
         #determine expression value
         if expression_type == "column":
             validate_name_regex(expression_value, allow_dot=True)
@@ -93,6 +99,7 @@ class SQLExpression:
         self.expression_type = expression_type
         self._positive = positive
         self.inverted = inverted
+        self.alias = alias
     @property
     def positive(self) -> bool:
         return self._positive
@@ -118,7 +125,7 @@ class SQLExpression:
             return self.expression_value
         elif self.expression_type == "set":
             if isinstance(self.expression_value, Iterable):
-                output_set = {format_sql_value(extract_value(x), convert_numbers=False) for x in self.expression_value}
+                output_set = {extract_value(x) for x in self.expression_value}
                 return output_set
             else:
                 raise TypeError("Set expression value must be an iterable.")
@@ -170,19 +177,20 @@ class SQLExpression:
 
             col_name = self.expression_value
             col_name = apply_signs_and_inverts(col_name, self.positive, include_sign, include_sign_only_if_negative, invert and self.inverted)
-            return col_name
-        elif self.expression_type == "value":
+            output_str = col_name
 
+        elif self.expression_type == "value":
             if self.is_text():
                 return f"'{self.expression_value}'"
             true_value = self.true_value()
             true_value_str = format_sql_value(abs(true_value))
-
             true_value_str = apply_signs_and_inverts(true_value_str, self.positive, include_sign, include_sign_only_if_negative, invert and self.inverted)
-            return true_value_str
+            output_str = true_value_str
         elif self.expression_type == "set":
-            return f"({', '.join(map(str, self.expression_value))})"
+            output_str = f"({', '.join(map(str, self.expression_value))})"
         self._assert_not_sum_mul("SQL string")
+        output_str += self.alias_str()
+        return output_str
 
     def placeholder_str(self, include_sign = True, include_sign_only_if_negative: bool = True, invert: bool = True) -> str:
         if self.expression_type == "column":
@@ -289,6 +297,7 @@ class SQLExpression:
 
     def copy(self) -> SQLExpression:
         """Create a copy of the SQLExpression."""
+
         return SQLExpression(
             expression_value=self.expression_value,
             expression_type=self.expression_type,
@@ -304,6 +313,7 @@ class SQLExpression:
             auto_parse_numbers=False,
             positive=kwargs.get("positive", self.positive),
             inverted=kwargs.get("inverted", self.inverted),
+            alias=kwargs.get("alias", self.alias)
         )
     @staticmethod
     def ensure_expressions(values: Iterable[SQLInput]) -> List[SQLExpression]:
@@ -333,8 +343,13 @@ class SQLExpression:
     
     def is_in(self, values: Iterable) -> SQLCondition:
         set_expr_ = set_expr(values)
-        print(self, set_expr)
         return SQLCondition(self, In(set_expr_))
+
+    def is_in_subquery(self, subquery: str) -> SQLCondition:
+        return SQLCondition(self, InSubquery(subquery))
+
+    def not_in_subquery(self, subquery: str) -> SQLCondition:
+        return SQLCondition(self, NotInSubquery(subquery))
 
     def is_not_in(self, values: Iterable) -> SQLCondition:
         set_expr_ = set_expr(values)
@@ -358,6 +373,32 @@ class SQLExpression:
     def startswith(self, pattern: SQLInput) -> SQLCondition:
         return SQLCondition(self, Like(SQLExpression.ensure_expression(pattern) + "%"))
 
+    def AS(self, alias: Union[SQLExpression, str] = None):
+        """Set an alias for the expression."""
+        if isinstance(alias, str):
+            alias = SQLExpression(alias, "column")
+        elif isinstance(alias, SQLExpression):
+            if alias.expression_type != "column":
+                raise ValueError("Alias must be a column name.")
+        elif alias is None:
+            pass
+        else:
+            raise TypeError("Alias must be a string or SQLExpression.")
+        copied = self.copy_with(alias=alias)
+        return copied
+        
+    set_alias = AS
+    aliased = AS
+    As = AS
+    def alias_str(self) -> str:
+        """Return the alias string for the expression."""
+        return _alias_str(self)
+    def __getattr__(self, name):
+        if name.isupper():
+            def dynamic_func(*args, **kwargs):
+                return Func(name, self, *args, **kwargs)
+            return dynamic_func
+        raise AttributeError(f"{type(self).__name__} has no attribute '{name}'")
 
 SQLExpression.isin = SQLExpression.is_in
 SQLExpression.notin = SQLExpression.is_not_in    
@@ -530,7 +571,7 @@ class SQLArithmeticOperation(SQLExpression):
         joined = self.symbol.join(fragments)
         wrapped = bracket_string_sandwich(joined) if len(self.expressions) > 1 else joined
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert)
-
+        alias_str = self.alias_str()
         return wrapped
 
     def placeholder_pair(self, include_sign = True, include_sign_only_if_negative: bool = True, invert: bool = True) -> Tuple[str, List[Any]]:
@@ -550,6 +591,7 @@ class SQLArithmeticOperation(SQLExpression):
         joined = self.symbol.join(fragments)
         wrapped = bracket_string_sandwich(joined) if len(self.expressions) > 1 else joined
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert)
+        wrapped += self.alias_str()
         return wrapped, parameters
     def __str__(self):
         name = self.__class__.operation_name
@@ -577,10 +619,15 @@ class SQLExpressionSum(SQLArithmeticOperation):
         if self.inverted and invert:
             wrapped = '1/' + wrapped
         if not include_sign:
-            return wrapped
-        if self.positive:
-            return wrapped if include_sign_only_if_negative else f"+{wrapped}"
-        return f"-{wrapped}"
+            pass
+        elif self.positive:
+            if not include_sign_only_if_negative:
+                wrapped = f"+{wrapped}"
+        else:
+            wrapped = f"-{wrapped}"
+        wrapped += self.alias_str()
+        return wrapped
+        
     def placeholder_pair(self, include_sign = True, include_sign_only_if_negative: bool = True, invert: bool = True) -> Tuple[str, List[Any]]:
         if not self.expressions:
             return "0", []
@@ -596,6 +643,7 @@ class SQLExpressionSum(SQLArithmeticOperation):
         if self.inverted and invert:
             wrapped = '1/' + wrapped
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert and self.inverted)
+        wrapped += self.alias_str()
         return wrapped, collected_inserts
     def flattened_expression(self) -> SQLExpression:
         flat = self.flatten(update_self=False)
@@ -693,7 +741,7 @@ class SQLExpressionProduct(SQLArithmeticOperation):
 
         wrapped = wrapped_numerator + wrapped_denominator
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert = False)
-
+        wrapped += self.alias_str()
         return wrapped
     def placeholder_pair(self, include_sign = True, include_sign_only_if_negative: bool = True, invert: bool = True) -> Tuple[str, List[Any]]:
 
@@ -740,7 +788,7 @@ class SQLExpressionProduct(SQLArithmeticOperation):
 
         wrapped = wrapped_numerator + wrapped_denominator
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert = False)
-
+        wrapped += self.alias_str()
         return wrapped, collected_inserts
     def flattened_expression(self) -> SQLExpression:
         flat = self.flatten(update_self=False)
@@ -799,7 +847,10 @@ class SQLExpressionConcat(SQLArithmeticOperation):
             return "''"
         fragments = [expr.placeholder_str() for expr in self.expressions]
         joined = " || ".join(fragments)
-        return f"({joined})" if len(self.expressions) > 1 else joined
+        if len(self.expressions) > 1:
+            joined = bracket_string_sandwich(joined)
+        joined += self.alias_str()
+        return joined
 
     def placeholder_pair(self, *args, **kwargs) -> Tuple[str, List[Any]]:
         fragments, params = [], []
@@ -814,7 +865,10 @@ class SQLExpressionConcat(SQLArithmeticOperation):
             fragments.append(ph)
             merge_placeholders(params, vals)
         joined = " || ".join(fragments)
-        return f"({joined})" if len(fragments) > 1 else joined, params
+        if len(self.expressions) > 1:
+            joined = bracket_string_sandwich(joined)
+        joined += self.alias_str()
+        return joined, params
 
     def copy(self) -> SQLExpression:
         return SQLExpressionConcat(
@@ -840,7 +894,7 @@ class SQLExpressionConcat(SQLArithmeticOperation):
 
 
 class SQLExpressionPower(SQLExpression):
-    def __new__(cls, base: SQLExpression, exponent: SQLInput):
+    def __new__(cls, base: SQLExpression, exponent: SQLInput, *, positive: bool = True, inverted: bool = False):
         base = SQLExpression.ensure_expression(base)
         exponent = SQLExpression.ensure_expression(exponent)
 
@@ -853,22 +907,23 @@ class SQLExpressionPower(SQLExpression):
             if exp_val == 1:
                 return base
         return super().__new__(cls)
-    def __init__(self, base: SQLExpression, exponent: SQLInput):
+    def __init__(self, base: SQLExpression, exponent: SQLInput, *, positive: bool = True, inverted: bool = False):
         self.base = SQLExpression.ensure_expression(base)
         self.exponent = SQLExpression.ensure_expression(exponent)
-        super().__init__(None, expression_type="pow", auto_parse_numbers=False)
+        super().__init__(None, expression_type="pow", auto_parse_numbers=False, positive=positive, inverted=inverted)
 
     def sql_string(self, include_sign: bool = True, include_sign_only_if_negative: bool = True, invert=True) -> str:
         base_str = self.base.sql_string(include_sign=True, include_sign_only_if_negative=True, invert=True)
-        if self.inverted:
+        if self.inverted and invert:
             new_exp = self.exponent.copy()
-            new_exp.inverted = not new_exp.inverted
+            new_exp.positive = not new_exp.positive
             exp_str = new_exp.sql_string(include_sign=True, include_sign_only_if_negative=True, invert=True)
         else:
             exp_str = self.exponent.sql_string(include_sign=True, include_sign_only_if_negative=True, invert=True)
         full_str = f"POWER({base_str}, {exp_str})"
         full_str = apply_signs_and_inverts(full_str, self.positive, include_sign, include_sign_only_if_negative, invert = False)
-        return f"POWER({base_str}, {exp_str})"
+        full_str += self.alias_str()
+        return full_str
 
     def placeholder_str(self, include_sign = True, include_sign_only_if_negative = True, invert = True) -> str:
         if self.inverted:
@@ -880,6 +935,7 @@ class SQLExpressionPower(SQLExpression):
         base_str = self.base.placeholder_str()
         wrapped = f"POWER({base_str}, {exp_str})"
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert = False)
+        wrapped += self.alias_str()
         return wrapped
 
     def placeholder_pair(self, include_sign = True, include_sign_only_if_negative = True, invert = True) -> Tuple[str, List[Any]]:
@@ -887,6 +943,7 @@ class SQLExpressionPower(SQLExpression):
         exp_placeholder, exp_params = self.exponent.placeholder_pair()
         wrapped =  f"POWER({base_placeholder}, {exp_placeholder})"
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert = False)
+        wrapped += self.alias_str()
         return wrapped, [*base_params, *exp_params]
 
     def flatten(self, *args, **kwargs) -> List[SQLExpression]:
@@ -896,7 +953,8 @@ class SQLExpressionPower(SQLExpression):
         return self
 
     def copy(self) -> SQLExpression:
-        return SQLExpressionPower(self.base.copy(), self.exponent.copy())
+        return SQLExpressionPower(self.base.copy(), self.exponent.copy(),
+                                 positive=self.positive, inverted=self.inverted)
 
     def __repr__(self) -> str:
         return f"SQLExpressionPower({self.base}, {self.exponent})"
@@ -907,20 +965,25 @@ class SQLExpressionPower(SQLExpression):
     def is_column_expression(self):
         return self.base.is_column_expression() and self.exponent.is_column_expression()
 
+
+
 class Func(SQLExpression):
-    def __init__(self, func_name: str, *args: SQLInput, tag: str = None):
+    def __init__(self, func_name: str, *args: SQLInput, tag: str = None, positive: bool = True, inverted: bool = False):
         if not isinstance(func_name, str) or not func_name.strip():
             raise ValueError("Function name must be a non-empty string.")
         self.func_name = func_name.upper()
         self.args = SQLExpression.ensure_expressions(args) if args else []
         self.tag = tag
-        super().__init__(None, expression_type="func", auto_parse_numbers=False)
+        super().__init__(None, expression_type="func", auto_parse_numbers=False, positive=positive, inverted=inverted)
 
-    def sql_string(self, *args, **kwargs) -> str:
+    def sql_string(self, include_sign: bool = True, include_sign_only_if_negative: bool = True, invert = True) -> str:
         args_sql = ", ".join(arg.sql_string(include_sign=True, include_sign_only_if_negative=True) for arg in self.args) if self.args else ""
         if self.tag:
             args_sql = f"{self.tag} {args_sql}"
-        return f"{self.func_name}({args_sql})"
+        wrapped = f"{self.func_name}({args_sql})"
+        wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign=include_sign, include_sign_only_if_negative=include_sign_only_if_negative, invert= invert and self.inverted)
+        wrapped += self.alias_str()
+        return wrapped
 
     def placeholder_str(self, include_sign: bool = True, include_sign_only_if_negative: bool = True, invert = True) -> str:
         args_placeholder = ", ".join(arg.placeholder_str(include_sign=True, include_sign_only_if_negative=True) for arg in self.args)
@@ -928,7 +991,8 @@ class Func(SQLExpression):
             args_placeholder = f"{self.tag} {args_placeholder}"
         s = f"{self.func_name}({args_placeholder})"
         s = apply_signs_and_inverts(s, self.positive, include_sign, include_sign_only_if_negative, invert= invert and self.inverted)
-        return 
+        s += self.alias_str()
+        return s
 
     def placeholder_pair(self, include_sign=True, include_sign_only_if_negative=True, invert=True) -> Tuple[str, List[Any]]:
         fragments = []
@@ -942,6 +1006,7 @@ class Func(SQLExpression):
             args_sql = f"{self.tag} {args_sql}"
         wrapped = f"{self.func_name}({args_sql})"
         wrapped = apply_signs_and_inverts(wrapped, self.positive, include_sign, include_sign_only_if_negative, invert=invert and self.inverted)
+        wrapped += self.alias_str()
         return wrapped, params
 
     def flatten(self, *args, **kwargs) -> List[SQLExpression]:
@@ -951,13 +1016,16 @@ class Func(SQLExpression):
         return self
 
     def copy(self) -> SQLExpression:
-        return Func(self.func_name, *[arg.copy() for arg in self.args], tag=self.tag)
+        return Func(self.func_name, *[arg.copy() for arg in self.args], tag=self.tag,
+                    positive=self.positive, inverted=self.inverted)
     
     def copy_with(self, func_name: str = None, args: List[SQLExpression] = None, tag: str = None) -> SQLExpression:
         return Func(
             func_name or self.func_name,
             *(arg.copy() for arg in (args if args is not None else self.args)),
-            tag=tag if tag is not None else self.tag
+            tag=tag if tag is not None else self.tag,
+            positive=self.positive,
+            inverted=self.inverted
         )
     
     def is_column_expression(self):
@@ -1094,7 +1162,6 @@ class In(SQLComparison):
         return f"{self.comparator} {self.set_expression.sql_string(include_sign=False)}"
 
     def placeholder_pair(self) -> Tuple[str, List[Any]]:
-        print("Calling placeholder_pair on In")
         placeholder, params = self.set_expression.placeholder_pair()
         return f"{self.comparator} {placeholder}", list(params if isinstance(params, list) else [params])
     def copy(self) -> SQLComparison:
@@ -1108,10 +1175,11 @@ class NotIn(In):
         return NotIn(self.set_expression.copy())
 
 class InSubquery(SQLComparison):
-    def __init__(self, subquery: str):
+    def __init__(self, subquery: str, placeholders: List[str] = None):
         self._validate_subquery_safe(subquery)
         self.subquery = subquery
         super().__init__('IN', [])
+        self.placeholders = placeholders if placeholders else []
 
     @staticmethod
     def _validate_subquery_safe(subquery: str) -> None:
@@ -1138,8 +1206,17 @@ class InSubquery(SQLComparison):
         return f"IN ({self.subquery})"
 
     def placeholder_pair(self) -> Tuple[str, List[Any]]:
-        return f"IN ({self.subquery})", []
+        return f"IN ({self.subquery})", self.placeholders
     
+class NotInSubquery(InSubquery):
+    def __init__(self, subquery: str, placeholders: List[str] = None):
+        super().__init__(subquery, placeholders)
+        self.comparator = 'NOT IN'
+    def sql_string(self) -> str:
+        return f"NOT IN ({self.subquery})"
+    def placeholder_pair(self) -> Tuple[str, List[Any]]:
+        return f"NOT IN ({self.subquery})", self.placeholders
+
 class Like(SQLComparison):
     def __init__(self, expression: SQLExpression):
         super().__init__('LIKE', [expression])
@@ -1338,6 +1415,18 @@ class SQLCondition:
     __gt__ = lambda self, other: self._relational_operator(other, ">")
     __ge__ = lambda self, other: self._relational_operator(other, ">=")
     __eq__ = lambda self, other: self._relational_operator(other, "=")
+    def flipped(self) -> SQLCondition:
+        """Flip the condition's comparison."""
+        if not self.comparison.attatchable:
+            raise ValueError("Cannot flip non-attachable comparison.")
+        comparison_expression = self.comparison.expressions[0]
+        opposite_comparator = inverted_inequalities.get(self.comparison.comparator, None)
+        if not opposite_comparator:
+            raise ValueError(f"Cannot flip comparison {self.comparison.comparator}.")
+        new_comparison = get_comparison(opposite_comparator, self.expression)
+        new_condition = SQLCondition(comparison_expression, new_comparison)
+        return new_condition
+        
 increasing = {"<", "<="}
 decreasing = {">", ">="}
 equal = {"="}
