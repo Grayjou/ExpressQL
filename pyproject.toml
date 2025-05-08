@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "expressql"
+version = "0.1.2"
+description = "A Pythonic DSL for SQL conditions and expressions."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Grayjou", email = "cgrayjou@gmail.com" }
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = [
+    "SQL",
+    "DSL",
+    "query builder",
+    "query conditions",
+    "SQL expressions",
+    "ORM",
+    "database",
+    "Python SQL",
+    "chained comparisons",
+    "data access",
+    "placeholder management",
+    "pythonic syntax",
+    "logical operators",
+    "SQL functions"
+]
+
+[project.urls]
+Homepage = "https://github.com/Grayjou/ExpressQL"
+Repository = "https://github.com/Grayjou/ExpressQL"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["examples*"]
