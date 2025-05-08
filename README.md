@@ -112,7 +112,7 @@ from expressQL import functions as f, cols
 salary, bonus, passive_incomes = cols("salary", "bonus", "passive_incomes")
 f.CUSTOM_FUNC_FOO(salary, bonus, passive_incomes, inverted = True)
 ```
-
+SQL:
 ```SQL
 1/CUSTOM_FUNC_FOO(salary, bonus, passive_incomes)
 ```
