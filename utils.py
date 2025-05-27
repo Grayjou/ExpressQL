@@ -1,4 +1,4 @@
-from typing import Any, Dict, Set, Union , Callable, Iterable
+from typing import Any, Dict, Set, Union , Callable, Iterable, List
 from collections.abc import Iterable
 from .exceptions import ForbiddenCharacterError
 from functools import wraps
@@ -18,7 +18,7 @@ forbidden_words = {
 
 
 
-def normalize_args(skip: int = 0):
+def normalize_args(skip: int = 0, decompose_string=False, decompose_bytes=False, convert=True, ignore_dict=True):
     """
     Decorator to normalize *args into a list, skipping the first `skip` arguments.
     If a single iterable (not a string) is passed as *args, it will be unpacked.
@@ -26,19 +26,54 @@ def normalize_args(skip: int = 0):
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # Split into skipped and target args
             skipped_args = args[:skip]
-            target_args = args[skip:]
+            target_args = args[skip:] if len(args) > skip else ()
 
-            if len(target_args) == 1 and isinstance(target_args[0], Iterable) and not isinstance(target_args[0], str):
-                normalized_args = list(target_args[0])
-            else:
-                normalized_args = list(target_args)
+            normalized_args = _normalize_args(
+                *target_args,
+                decompose_string=decompose_string,
+                decompose_bytes=decompose_bytes,
+                convert=convert,
+                ignore_dict=ignore_dict
+            )
 
             return func(*skipped_args, *normalized_args, **kwargs)
         return wrapper
     return decorator
 
+
+def _normalize_args(*args, decompose_string=False, decompose_bytes=False, convert=True, ignore_dict=True):
+
+    if not args:
+        return []
+    elif len(args) > 1:
+        return list(args)
+    if isinstance(args[0], str):
+        if decompose_string:
+            return list(args[0])
+        return [args[0]]
+    elif isinstance(args[0], bytes):
+        if decompose_bytes:
+            return list(args[0])
+        return [args[0]] 
+    elif isinstance(args[0], dict):
+        if ignore_dict:
+            return [args[0]]
+        return list(args[0].values())
+    elif isinstance(args[0], Iterable) and not isinstance(args[0], (str, bytes)):
+        #Second check should never happen, but just in case someone alters the function
+        if convert:
+            return list(args[0])
+        return args[0]
+    else:
+
+        return list(args)
+def merge_placeholders(parameters: List[Any], new_params: Any) -> None:
+    """Merge a new parameter or list of parameters o the current parameters list."""
+    if isinstance(new_params, list):
+        parameters.extend(new_params)
+    else:
+        parameters.append(new_params)
 
 class TwoWayDict:
     """
@@ -139,6 +174,9 @@ class TwoWayDict:
 Twd = TwoWayDict
 
 
+def is_outer_bracketed(s: str) -> bool:
+
+    return s.startswith("(") and s.endswith(")") and s.count("(") == 1 and s.count(")") == 1
 
 def bracket_string_sandwich(string: str) -> str:
     """
@@ -164,6 +202,20 @@ def parse_number(s: str) -> Any:
         except ValueError:
             continue
     return s
+
+def is_between(s:str, start: str, end: str) -> bool:
+    """
+    Check if a string starts with `start` and ends with `end`.
+    Returns True if it does, False otherwise.
+    """
+    return s.startswith(start) and s.endswith(end)
+
+def is_quoted(s: str) -> bool:
+    """
+    Check if a string is wrapped in single or double quotes.
+    Returns True if it is quoted, False otherwise.
+    """
+    return is_between(s, "'", "'") or is_between(s, '"', '"')
 
 # Formatting
 def format_sql_value(val: Any, convert_numbers:bool = True) -> str:

@@ -10,6 +10,8 @@ def is_number(s):
         return True
     except ValueError:
         return False
+    except TypeError:
+        return False
 
 
 
@@ -123,3 +125,67 @@ def validate_name_regex(
         found = get_forbidden_words_in(name)
         if found:
             raise ValueError(f"Column name contains forbidden words: {found}")
+
+keywords = {
+        "select", "from", "where", "table", "insert", "update", "delete",
+        "create", "drop", "alter", "join", "on", "as", "and", "or", "not",
+        "in", "is", "null", "values", "set", "group", "by", "order", "having",
+        "limit", "offset", "distinct"
+    }
+
+def get_forbidden_words_in(name: str):
+
+    tokens = name.casefold().replace('.', ' ').replace('_', ' ').split()
+    return [kw for kw in keywords if kw in tokens]
+
+def validate_name(
+    name: str, *, 
+    validate_chars: bool = True, 
+    validate_words: bool = True, 
+    validate_len: bool = True,
+    allow_dot: bool = True,
+    allow_dollar: bool = False,
+    max_len: int = 255,
+    forgiven_chars = set(),
+    allow_digit: bool = False,
+) -> None:
+    if not isinstance(name, str):
+        raise TypeError("Name must be a string.")
+
+    if is_number(name):
+        raise ValueError("Column name cannot be a number.")
+
+    if len(name) == 0:
+        raise ValueError("Column name cannot be empty.")
+
+    if validate_len and len(name) > max_len:
+        raise ValueError("Column name is too long. Maximum length is 255 characters.")
+
+    if name[0].isdigit() and not allow_digit:
+        raise ValueError("Column name cannot start with a digit.")
+    
+    if validate_chars:
+        allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+        allowed.update(forgiven_chars)
+        if allow_dot:
+            allowed.add('.')
+        if allow_dollar:
+            allowed.add('$')
+        
+        bad_chars = [c for c in name if c not in allowed]
+        if bad_chars:
+            raise ValueError(f"Column name contains forbidden characters: {bad_chars}")
+
+        if allow_dot:
+            # Extra check: make sure dots are only separating valid parts
+            parts = name.split('.')
+            for part in parts:
+                if not part:
+                    raise ValueError("Column name has consecutive dots or leading/trailing dot.")
+                if part[0].isdigit():
+                    raise ValueError(f"Each part of a dotted name must not start with a digit: {part}")
+
+    if validate_words:
+        found = next((word for word in keywords if word == name.casefold()), None)
+        if found:
+            raise ValueError(f"Name contains forbidden words: {found}")

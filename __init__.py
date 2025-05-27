@@ -6,7 +6,7 @@ where_string, Func)
 
 from .utils import parse_number, format_sql_value, forbidden_chars, forbidden_words
 from .dsl import pk_condition
-
+from .parsers import parse_expr_or_cond, parse_expression, parse_condition
 get_condition = get_comparison  # Alias for backward compatibility
 
 __all__ = [
@@ -15,5 +15,5 @@ __all__ = [
     "parse_number", "format_sql_value", "col", "IsNull", "IsNotNull", "forbidden_chars",
     "TrueCondition", "FalseCondition", "pk_condition", "forbidden_words", "set_expr",
     "num", "text", "GreaterThan", "SQLChainCondition", "SQLExpression", "SQLInput",
-    "ensure_sql_expression", "where_string", "Func", "cols"
+    "ensure_sql_expression", "where_string", "Func", "cols", "parse_expr_or_cond", "parse_expression", "parse_condition",
 ]
