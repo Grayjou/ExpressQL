@@ -57,7 +57,7 @@ def conditions_guide():
 
     A basic condition is made of expressions and a comparison operator.
               - Comparison operators: ==, !=, <, <=, >, >=, between, not_between
-              - Characteristiscs: is_null, is_not_null, like, not_like, in, not_in
+              - Characteristics: is_null, is_not_null, like, not_like, in, not_in
 
     Compound conditions are made of basic conditions and logical operators.
               - Logical operators: and, or, not, xor
