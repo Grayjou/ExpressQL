@@ -1503,7 +1503,8 @@ class IsNotNull(SQLComparison):
     
     def placeholder_pair(self):
         return "IS NOT NULL", []
-    def __neg(self):
+
+    def __neg__(self):
         return IsNull()
 
 
@@ -1518,7 +1519,7 @@ negation_dict_ = {
     In: NotIn,
 }
 negation_dict = Twd()
-negation_dict.update(negation_dict)
+negation_dict.update(negation_dict_)
 
 
 def get_comparison(statement: str, value1: SQLInput = None, value2: SQLInput = None) -> SQLComparison:
