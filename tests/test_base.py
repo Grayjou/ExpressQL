@@ -183,14 +183,13 @@ class TestSQLComparison:
         # Order may vary due to set operations
         assert set(params) == {"HR", "IT", "Sales"}
 
-    @pytest.mark.skip(reason="is_not_in has a bug in the current implementation")
     def test_not_in_list(self):
         """Test NOT IN comparison - uses is_not_in method."""
         status = col("status")
         # Use is_not_in instead of notin
         cond = status.is_not_in(["inactive", "deleted"])
         sql, params = cond.placeholder_pair()
-        assert "NOT" in sql or "NOTIN" in sql
+        assert "NOT IN" in sql
         assert set(params) == {"inactive", "deleted"}
 
     def test_is_null(self):
