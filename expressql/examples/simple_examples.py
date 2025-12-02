@@ -1,4 +1,4 @@
-from expressQL import col, cols, text, num, SQLCondition, AndCondition, OrCondition, Func
+from expressql import col, cols, text, num, SQLCondition, AndCondition, OrCondition, Func
 
 def arithmetic_comparisons():
     print("== Arithmetic Comparisons ==")
