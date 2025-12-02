@@ -70,5 +70,12 @@ print(*log.placeholder_pair())
 - Documented that ExpressQL focuses on expressions/conditions; full query building should use recordsQL or similar
 
 
+## [0.3.7] - 2025-12-15
+### Fixed
+- Improved condition parsing to handle `IN` lists, `LIKE` clauses, and `BETWEEN` keywords case-insensitively.
+- Added support for quoted `LIKE` patterns and literal `IN` value lists during placeholder generation.
+- Re-enabled parser tests for condition handling to cover the updated behavior.
+
+
 
 
