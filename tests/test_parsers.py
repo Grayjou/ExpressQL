@@ -139,7 +139,6 @@ class TestConditionParser:
         # Parser includes quotes in string values
         assert "'inactive'" in params
 
-    @pytest.mark.skip(reason="BETWEEN parsing needs special handling")
     def test_parse_between(self):
         """Test parsing BETWEEN condition."""
         cond = parse_condition("age BETWEEN 18 AND 65")
@@ -149,7 +148,6 @@ class TestConditionParser:
         assert 18 in params
         assert 65 in params
 
-    @pytest.mark.skip(reason="IN with list parsing needs special handling")
     def test_parse_in_list(self):
         """Test parsing IN condition."""
         cond = parse_condition("status IN ('active', 'pending')")
@@ -175,7 +173,6 @@ class TestConditionParser:
         assert "IS NOT NULL" in sql
         assert params == []
 
-    @pytest.mark.skip(reason="LIKE parsing not fully implemented")
     def test_parse_like(self):
         """Test parsing LIKE condition."""
         cond = parse_condition("name LIKE '%John%'")
@@ -246,7 +243,6 @@ class TestAutoParser:
         result = parse_expr_or_cond("SUM(salary)")
         assert isinstance(result, SQLExpression)
 
-    @pytest.mark.skip(reason="IN condition auto-detection needs special handling")
     def test_auto_detect_in_condition(self):
         """Test auto-detection of IN condition."""
         result = parse_expr_or_cond("status IN ('active', 'pending')")
@@ -263,7 +259,6 @@ class TestParserEdgeCases:
         assert "age" in sql
         assert 25 in params
 
-    @pytest.mark.skip(reason="BETWEEN case insensitive needs special handling")
     def test_parse_case_insensitive_keywords(self):
         """Test case-insensitive keyword parsing."""
         cond1 = parse_condition("age between 18 and 65")

@@ -26,12 +26,14 @@ from .expressions_parser import parse_expression, extract_replace_outermost_brac
 from .parsing_utils import (is_outer_bracketed,
      bracket_string_sandwich, extract_replace_outermost_bracketed,
      remove_outer_brackets)
+import ast
 import re
 from ..base import (
     SQLCondition, SQLChainCondition,
-    AndCondition, OrCondition, NotCondition, SubQuery
+    AndCondition, OrCondition, NotCondition, SubQuery, SQLExpression
 )
 from .subquery_placeholder import parametrize_subquery
+from ..utils import is_quoted
 class _ConditionToken:
     pass
 
@@ -196,6 +198,27 @@ def find_rhs_expression(s: str, and_pos: int) -> tuple[int, str]:
     hi_expr = s[and_pos + len("AND"):m].strip()
     return m, hi_expr
 
+
+def parse_in_list(expression: str) -> list:
+    """Parse a parenthesised IN list into Python values.
+
+    Args:
+        expression: The right-hand side of an IN clause, including parentheses.
+
+    Returns:
+        list: Parsed Python values.
+    """
+    expr = remove_outer_brackets(expression.strip())
+    try:
+        parsed = ast.literal_eval(f"({expr})")
+    except Exception as exc:  # pragma: no cover - defensive
+        raise ValueError(f"Invalid IN list: {expression!r}") from exc
+
+    # literal_eval returns a single value for one element; normalise to list
+    if not isinstance(parsed, (list, tuple)):
+        parsed = (parsed,)
+    return list(parsed)
+
 def transform_betweens(s: str) -> str:
     s_upper = s.upper()
     out = []
@@ -223,8 +246,8 @@ def transform_betweens(s: str) -> str:
         lo = s[idx + len("BETWEEN") : and_pos].strip()
         end_hi, hi = find_rhs_expression(s, and_pos)
 
-        # 6) emit expanded form *with* a trailing space
-        out.append(f"( {lhs} >= {lo} AND {lhs} <= {hi} ) ")
+        # 6) wrap BETWEEN block to avoid top-level AND splitting
+        out.append(f"( {lhs} BETWEEN {lo} AND {hi} ) ")
 
         # advance
         i = end_hi
@@ -237,6 +260,7 @@ def parse_condition(s: str, *, outer_brackets_removed:bool = False) -> SQLCondit
     # 1) strip outer parentheses
     if not outer_brackets_removed:
         s = remove_outer_brackets(s)
+    s_upper = s.upper()
 
     # 2) split top-level OR
     or_parts = split_top_level(s, "OR")
@@ -244,22 +268,22 @@ def parse_condition(s: str, *, outer_brackets_removed:bool = False) -> SQLCondit
         return OrCondition(*[parse_condition(p) for p in or_parts])
 
     s = transform_betweens(s)
-    # 3) split top-level AND
+    # 3) split top-level AND using the transformed string (which may add grouping)
 
     and_parts = split_top_level(s, "AND")
     if len(and_parts) > 1:
         return AndCondition(*[parse_condition(p) for p in and_parts])
 
-
-
+    s = remove_outer_brackets(s.strip())
+    s_upper = s.upper()
     # 4) handle NOT
-    if s.upper().startswith("NOT "):
+    if s_upper.startswith("NOT "):
         return NotCondition(parse_condition(s[4:].strip()))
 
     # 5) Handle IN
-    if "NOT IN " in s.upper():
+    if re.search(r"\s+NOT\s+IN\s+", s, flags=re.IGNORECASE):
         # split on NOT IN, preserving the NOT IN keyword
-        tokens = re.split(r"\s*NOT\s+IN\s*", s, maxsplit=1)
+        tokens = re.split(r"\s*NOT\s+IN\s*", s, maxsplit=1, flags=re.IGNORECASE)
         if len(tokens) != 2:
             raise ValueError(f"Invalid NOT IN condition: {s!r}")
         # parse the left side as an expression
@@ -267,17 +291,19 @@ def parse_condition(s: str, *, outer_brackets_removed:bool = False) -> SQLCondit
         # parse the right side as a subquery or a list of values
         right_side = tokens[1].strip()
         pure_right_side = remove_outer_brackets(right_side)
-        if pure_right_side.startswith("SELECT"):
+        if pure_right_side.upper().startswith("SELECT"):
             # it's a subquery
             subquery, placeholders = parametrize_subquery(pure_right_side, style="?")
             return left_expr.not_in_subquery(subquery, params=placeholders)
         else:
+            if right_side.startswith("(") and right_side.endswith(")"):
+                values = parse_in_list(right_side)
+                return left_expr.is_not_in(values)
             right_expr = parse_expression(right_side)
             return left_expr.is_not_in(right_expr)
-    elif " IN " in s.upper():
+    elif re.search(r"\s+IN\s+", s, flags=re.IGNORECASE):
         # split on IN, preserving the IN keyword
-        s = s.replace("in", "IN").replace("In", "IN").replace("iN", "IN")
-        tokens = re.split(r"\s*IN\s*", s, maxsplit=1)
+        tokens = re.split(r"\s*IN\s*", s, maxsplit=1, flags=re.IGNORECASE)
 
         if len(tokens) != 2:
             raise ValueError(f"Invalid IN condition: {s!r}")
@@ -286,31 +312,62 @@ def parse_condition(s: str, *, outer_brackets_removed:bool = False) -> SQLCondit
         # parse the right side as a subquery or a list of values
         right_side = tokens[1].strip()
         pure_right_side = remove_outer_brackets(right_side)
-        if remove_outer_brackets(right_side).upper().startswith("SELECT"):
+        if pure_right_side.upper().startswith("SELECT"):
             # it's a subquery
             subquery, placeholders = parametrize_subquery(pure_right_side, style="?")
             return left_expr.is_in_subquery(subquery, params=placeholders)
         else:
+            if right_side.startswith("(") and right_side.endswith(")"):
+                values = parse_in_list(right_side)
+                return left_expr.is_in(values)
             right_expr = parse_expression(right_side)
             return left_expr.is_in(right_expr)
-        
 
-    if " IS NULL" in s.upper():
-        # split on IS NULL, preserving the IS NULL keyword
-        tokens = re.split(r"\s*IS\s+NULL\s*", s, maxsplit=1)
-        if len(tokens) != 2:
-            raise ValueError(f"Invalid IS NULL condition: {s!r}")
-        # parse the left side as an expression
+    # 6) BETWEEN
+    between_match = re.match(r"(.+?)\s+BETWEEN\s+(.+?)\s+AND\s+(.+)", s, flags=re.IGNORECASE)
+    if between_match:
+        left_raw, low_raw, high_raw = between_match.groups()
+        left_expr = parse_expression(left_raw.strip())
+        low_expr = parse_expression(low_raw.strip())
+        high_expr = parse_expression(high_raw.strip())
+        return left_expr.between(low_expr, high_expr)
+
+    # 7) LIKE
+    if re.search(r"\s+NOT\s+LIKE\s+", s, flags=re.IGNORECASE):
+        tokens = re.split(r"\s*NOT\s+LIKE\s*", s, maxsplit=1, flags=re.IGNORECASE)
         left_expr = parse_expression(tokens[0].strip())
-        return left_expr.is_null()
-    elif " IS NOT NULL" in s.upper():
+        right_raw = tokens[1].strip()
+        if is_quoted(right_raw):
+            right_expr = SQLExpression(right_raw, "value", auto_parse_numbers=False)
+        else:
+            right_expr = parse_expression(right_raw)
+        return left_expr.not_like(right_expr)
+    elif re.search(r"\s+LIKE\s+", s, flags=re.IGNORECASE):
+        tokens = re.split(r"\s*LIKE\s*", s, maxsplit=1, flags=re.IGNORECASE)
+        left_expr = parse_expression(tokens[0].strip())
+        right_raw = tokens[1].strip()
+        if is_quoted(right_raw):
+            right_expr = SQLExpression(right_raw, "value", auto_parse_numbers=False)
+        else:
+            right_expr = parse_expression(right_raw)
+        return left_expr.like(right_expr)
+
+    if re.search(r"\s+IS\s+NOT\s+NULL\s*$", s, flags=re.IGNORECASE):
         # split on IS NOT NULL, preserving the IS NOT NULL keyword
-        tokens = re.split(r"\s*IS\s+NOT\s+NULL\s*", s, maxsplit=1)
+        tokens = re.split(r"\s*IS\s+NOT\s+NULL\s*", s, maxsplit=1, flags=re.IGNORECASE)
         if len(tokens) != 2:
             raise ValueError(f"Invalid IS NOT NULL condition: {s!r}")
         # parse the left side as an expression
         left_expr = parse_expression(tokens[0].strip())
         return left_expr.is_not_null()
+    elif re.search(r"\s+IS\s+NULL\s*$", s, flags=re.IGNORECASE):
+        # split on IS NULL, preserving the IS NULL keyword
+        tokens = re.split(r"\s*IS\s+NULL\s*", s, maxsplit=1, flags=re.IGNORECASE)
+        if len(tokens) != 2:
+            raise ValueError(f"Invalid IS NULL condition: {s!r}")
+        # parse the left side as an expression
+        left_expr = parse_expression(tokens[0].strip())
+        return left_expr.is_null()
 
 
     
