@@ -238,6 +238,10 @@ def parse_number(s: str) -> Any:
     Returns:
         int, float, or original value
     """
+    # Handle None explicitly
+    if s is None:
+        return None
+    
     # If already a number, preserve its type
     if isinstance(s, (int, float)):
         return s

@@ -442,11 +442,17 @@ class TestEdgeCases:
         assert params_int == [3]
         assert isinstance(params_int[0], int)
         
-        # Float value
+        # Float literal 3.0 preserves type (not converted since already float)
         float_value = num(3.0)
         sql_float, params_float = float_value.placeholder_pair()
         assert params_float == [3.0]
-        # 3.0 is parsed as float but should preserve type
+        assert isinstance(params_float[0], float)
+        
+        # String "3.0" is parsed: since 3.0.is_integer() is True, becomes int
+        string_value = num("3.0")
+        sql_str, params_str = string_value.placeholder_pair()
+        assert params_str == [3]
+        assert isinstance(params_str[0], int)
         
     def test_none_in_complex_condition(self):
         """Test None handling in complex conditions."""

@@ -2306,7 +2306,7 @@ def text(value: str) -> SQLExpression:
 
 
 @normalize_args()
-def cols(*names: str, skip_validation:bool = False) -> list[SQLExpression]:
+def cols(*names: str, skip_validation:bool = False) -> List[SQLExpression]:
     """
     Create a list of column SQL expressions.
     
@@ -2349,12 +2349,12 @@ def cols(*names: str, skip_validation:bool = False) -> list[SQLExpression]:
     return [col(name, skip_validation=skip_validation) for name in names]
 
 @normalize_args()
-def nums(*values: Union[str, int, float]) -> SQLExpression:
+def nums(*values: Union[str, int, float]) -> List[SQLExpression]:
     """Create a list of numeric SQL expressions."""
     return [num(value) for value in values]
 
 @normalize_args()
-def text_exprs(*values: str) -> SQLExpression:
+def text_exprs(*values: str) -> List[SQLExpression]:
     """Create a list of text SQL expressions."""
     return [text(value) for value in values]
 
