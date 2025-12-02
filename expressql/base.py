@@ -1436,7 +1436,7 @@ class NotIn(In):
             return NotInSubquery(set_expression)
         if set_expression.expression_type != "set":
             raise TypeError("NotIn comparison expects a 'set' SQLExpression.")
-        return super().__new__(cls)
+        return object.__new__(cls)
     def __init__(self, set_expression: SQLExpression):
         super().__init__(set_expression)
         self.comparator = 'NOT IN'
