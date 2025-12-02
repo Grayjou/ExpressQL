@@ -1,3 +1,31 @@
+"""
+ExpressQL Functions Module - SQL function wrappers and utilities.
+
+This module provides convenient access to common SQL functions and allows
+dynamic creation of custom function calls. All standard SQL functions are
+available as Python functions that return Func objects.
+
+Function Categories:
+    - AGGREGATE_FUNCTIONS: SUM, AVG, COUNT, MAX, MIN, etc.
+    - NUMERIC_FUNCTIONS: ABS, ROUND, POWER, SQRT, etc.
+    - STRING_FUNCTIONS: UPPER, LOWER, LENGTH, TRIM, etc.
+    - DATETIME_FUNCTIONS: DATE, TIME, DATETIME, etc.
+    - CONDITIONAL_FUNCTIONS: COALESCE, IFNULL, NULLIF, etc.
+
+Dynamic Function Creation:
+    Any uppercase name can be used as a function name via __getattr__.
+
+Example:
+    >>> import expressql.functions as f
+    >>> from expressql import col
+    >>> 
+    >>> # Use built-in function
+    >>> result = f.SUM(col("salary"))
+    >>> 
+    >>> # Use custom function
+    >>> custom = f.MY_CUSTOM_FUNC(col("value"), 10)
+"""
+
 from .base import Func
 
 AGGREGATE_FUNCTIONS = {"AVG", "COUNT", "GROUP_CONCAT", "MAX", "MIN", "SUM", "TOTAL"}

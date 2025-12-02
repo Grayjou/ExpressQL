@@ -1,3 +1,24 @@
+"""
+ExpressQL Validators - Validation functions for SQL inputs.
+
+This module provides validation functions to ensure SQL safety and correctness.
+It includes functions to validate column names, check for SQL keywords, and
+verify numeric values.
+
+Key Functions:
+    is_number: Check if a value can be converted to a number
+    validate_name: Validate a column name for SQL safety
+    validate_subquery_safe: Validate that a subquery string is safe
+    get_forbidden_words_in: Find SQL keywords in a string
+
+Example:
+    >>> from expressql.validators import is_number, get_forbidden_words_in
+    >>> is_number("42")
+    True
+    >>> get_forbidden_words_in("SELECT * FROM users")
+    ['select', 'from']
+"""
+
 import re
 
 def is_number(s):

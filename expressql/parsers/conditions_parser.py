@@ -1,3 +1,27 @@
+"""
+ExpressQL Condition Parser - Parse SQL-like condition strings.
+
+This module provides functionality to parse SQL condition strings into
+SQLCondition objects. It handles comparison operators, logical operators
+(AND, OR, NOT), and complex nested conditions.
+
+Key Features:
+    - Parses comparison operations (=, <, >, <=, >=, !=, LIKE, IN, BETWEEN, etc.)
+    - Parses logical operations (AND, OR, NOT)
+    - Handles nested conditions with proper precedence
+    - Supports BETWEEN expansion to composite conditions
+    - Handles subqueries in conditions
+
+Functions:
+    parse_condition: Main entry point for parsing condition strings
+    transform_betweens: Transform BETWEEN clauses into composite conditions
+
+Example:
+    >>> from expressql.parsers.conditions_parser import parse_condition
+    >>> cond = parse_condition("age >= 18 AND department = 'IT'")
+    >>> sql, params = cond.placeholder_pair()
+"""
+
 from .expressions_parser import parse_expression, extract_replace_outermost_bracketed_withfunc
 from .parsing_utils import (is_outer_bracketed,
      bracket_string_sandwich, extract_replace_outermost_bracketed,
