@@ -1,3 +1,20 @@
+"""
+ExpressQL Main Parser - Auto-detect expression or condition parsing.
+
+This module provides the main entry point for parsing SQL-like strings
+into either SQLExpression or SQLCondition objects, automatically detecting
+which type is appropriate based on the content.
+
+Functions:
+    parse_expr_or_cond: Automatically parse a string as expression or condition
+
+Example:
+    >>> from expressql.parsers.main import parse_expr_or_cond
+    >>> result = parse_expr_or_cond("age > 25 AND salary > 40000")
+    >>> type(result)
+    <class 'expressql.base.SQLCondition'>
+"""
+
 from .conditions_parser import parse_condition
 from .expressions_parser import parse_expression
 from ..base import SQLExpression, SQLCondition

@@ -1,3 +1,33 @@
+"""
+ExpressQL Base Module - Core SQL expression and condition classes.
+
+This module provides the fundamental building blocks for constructing SQL expressions
+and conditions in a Pythonic way. It includes classes for representing SQL values,
+columns, arithmetic operations, comparisons, and logical operations.
+
+Key Classes:
+    SQLExpression: Represents any SQL expression (column, value, arithmetic, etc.)
+    SQLCondition: Represents a SQL condition (comparison or logical operation)
+    SQLComparison: Base class for comparison operations (=, <, >, etc.)
+    AndCondition, OrCondition, NotCondition: Logical operations on conditions
+    Func: Represents SQL function calls
+
+Key Functions:
+    col: Create a column expression
+    cols: Create multiple column expressions
+    num: Create a numeric value expression
+    text: Create a text value expression
+    where_string: Convert a condition to a WHERE clause string
+    get_comparison: Create a comparison from a string operator
+
+Example:
+    >>> from expressql.base import col, Func
+    >>> age = col("age")
+    >>> salary = col("salary")
+    >>> condition = (age > 25) & (salary > 40000)
+    >>> sql, params = condition.placeholder_pair()
+"""
+
 from __future__ import annotations
 from typing import Any, Union, List, Iterable, Tuple, Set
 

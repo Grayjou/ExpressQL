@@ -1,3 +1,32 @@
+"""
+ExpressQL Utilities - Helper functions and constants for SQL generation.
+
+This module provides utility functions and constants used throughout ExpressQL
+for SQL string manipulation, validation, and parameter handling.
+
+Key Functions:
+    parse_number: Parse a string into int or float if possible
+    format_sql_value: Format Python values for SQL representation
+    normalize_args: Decorator to normalize function arguments
+    merge_placeholders: Merge parameter lists together
+    ensure_bracketed: Ensure a string is wrapped in parentheses
+    bracket_string_sandwich: Wrap a string in parentheses
+
+Key Constants:
+    forbidden_chars: Set of characters not allowed in column names
+    forbidden_words: Set of SQL keywords that should not be used as column names
+
+Classes:
+    TwoWayDict: A bidirectional dictionary for key-value lookups
+
+Example:
+    >>> from expressql.utils import parse_number, format_sql_value
+    >>> parse_number("42")
+    42
+    >>> format_sql_value("test")
+    "'test'"
+"""
+
 from typing import Any, Dict, Set, Union , Callable, Iterable, List
 from collections.abc import Iterable
 from .exceptions import ForbiddenCharacterError

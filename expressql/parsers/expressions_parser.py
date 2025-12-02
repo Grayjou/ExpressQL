@@ -1,3 +1,26 @@
+"""
+ExpressQL Expression Parser - Parse SQL-like expression strings.
+
+This module provides functionality to parse SQL expression strings into
+SQLExpression objects. It handles arithmetic operations, function calls,
+column references, literals, and complex nested expressions.
+
+Key Features:
+    - Parses arithmetic operations (+, -, *, /)
+    - Parses function calls (e.g., SUM(column))
+    - Handles nested expressions with proper precedence
+    - Supports string concatenation (||)
+    - Handles subqueries
+
+Functions:
+    parse_expression: Main entry point for parsing expression strings
+
+Example:
+    >>> from expressql.parsers.expressions_parser import parse_expression
+    >>> expr = parse_expression("LOG(age, 10) + salary * 2")
+    >>> sql, params = expr.placeholder_pair()
+"""
+
 from ..base import SQLExpression, SQLExpressionSum, SQLExpressionConcat, SQLExpressionProduct, Func, \
 SubQuery
 from typing import List, Optional, Set

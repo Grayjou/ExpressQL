@@ -1,3 +1,23 @@
+"""
+ExpressQL Parsing Utilities - Helper functions for parsing SQL strings.
+
+This module provides utility functions used by the parsers to manipulate
+strings, handle brackets, and extract components from SQL-like strings.
+
+Functions:
+    ensure_bracketed: Ensure a string is wrapped in parentheses
+    ensure_outer_bracketed: Ensure outer parentheses are present
+    bracket_string_sandwich: Wrap a string in parentheses
+    is_outer_bracketed: Check if string has balanced outer brackets
+    remove_outer_brackets: Remove outer brackets if present
+    extract_word_before: Extract a word before a given index
+
+Example:
+    >>> from expressql.parsers.parsing_utils import ensure_bracketed
+    >>> ensure_bracketed("test")
+    '(test)'
+"""
+
 
 def ensure_bracketed(string: str) -> str:
     """

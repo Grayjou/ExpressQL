@@ -1,3 +1,22 @@
+"""
+ExpressQL Subquery Placeholder - Utilities for parameterizing subqueries.
+
+This module provides functions to safely parameterize SQL subqueries by replacing
+literal values with placeholders and extracting the values into a separate list.
+This helps prevent SQL injection and supports different placeholder styles.
+
+Functions:
+    parametrize_subquery: Replace literals in a subquery with placeholders
+
+Example:
+    >>> from expressql.parsers.subquery_placeholder import parametrize_subquery
+    >>> sql, params = parametrize_subquery("age > 30 AND name = 'Alice'")
+    >>> print(sql)
+    age > %s AND name = %s
+    >>> print(params)
+    [30, 'Alice']
+"""
+
 import re
 from typing import Tuple, List, Any
 
