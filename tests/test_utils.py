@@ -48,6 +48,37 @@ class TestParseNumber:
         result = parse_number("")
         # Returns empty string if not parseable
         assert result == ""
+    
+    def test_parse_float_preserves_precision(self):
+        """Test that float values preserve their precision."""
+        # Test float input (not string)
+        result = parse_number(3.14159)
+        assert result == 3.14159
+        assert isinstance(result, float)
+    
+    def test_parse_int_preserves_type(self):
+        """Test that int values preserve their type."""
+        # Test int input (not string)
+        result = parse_number(42)
+        assert result == 42
+        assert isinstance(result, int)
+    
+    def test_parse_whole_number_float_string(self):
+        """Test that whole number strings become ints."""
+        result = parse_number("3.0")
+        assert result == 3
+        assert isinstance(result, int)
+    
+    def test_parse_decimal_float_string(self):
+        """Test that decimal strings become floats."""
+        result = parse_number("3.14")
+        assert result == 3.14
+        assert isinstance(result, float)
+    
+    def test_parse_none_returns_none(self):
+        """Test that None is returned as-is."""
+        result = parse_number(None)
+        assert result is None
 
 
 class TestFormatSqlValue:

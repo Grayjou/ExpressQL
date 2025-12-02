@@ -60,6 +60,14 @@ print(*log.placeholder_pair())
 
 ### Improved
 - Enhanced documentation in `parse_number()` to clarify precision handling behavior
+- **Enhanced `num()` documentation**: Added comprehensive documentation explaining precision preservation behavior with examples
+- **Enhanced `set_expr()` documentation**: Added detailed documentation clarifying its use for IN/NOT IN clauses, with guidance on UPDATE SET expressions
+- **Enhanced `cols()` documentation**: Added documentation explaining integration with query builders like recordsQL, including how to extract column names from SQLExpression objects for SELECT and GROUP BY operations
+
+### Documentation
+- Clarified that `set_expr()` is for IN/NOT IN operations, not UPDATE SET clauses with expressions
+- Added guidance for query builder integration: how to extract column names from SQLExpression objects
+- Documented that ExpressQL focuses on expressions/conditions; full query building should use recordsQL or similar
 
 
 

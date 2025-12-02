@@ -2216,7 +2216,44 @@ class FalseCondition(SQLCondition):
         return isinstance(other, FalseCondition) or other in (False, 0)
 
 def num(value: Union[str, int, float]) -> SQLExpression:
-    """Create a numeric SQL expression."""
+    """
+    Create a numeric SQL expression.
+    
+    Converts a numeric value to an SQLExpression suitable for use in SQL operations.
+    The function preserves numeric precision:
+    - Integer values remain as integers
+    - Float values preserve their decimal precision
+    - String representations of numbers are parsed accordingly
+    
+    Args:
+        value: A numeric value (int, float) or string representation of a number
+    
+    Returns:
+        SQLExpression: A value-type expression containing the numeric value
+    
+    Raises:
+        TypeError: If the value is not a number or cannot be parsed as one
+    
+    Examples:
+        >>> # Integer values
+        >>> age = num(25)
+        >>> sql, params = age.placeholder_pair()
+        >>> # sql = "?", params = [25]
+        
+        >>> # Float values (precision preserved)
+        >>> price = num(19.99)
+        >>> sql, params = price.placeholder_pair()
+        >>> # sql = "?", params = [19.99]
+        
+        >>> # String representations
+        >>> value = num("3.14159")
+        >>> sql, params = value.placeholder_pair()
+        >>> # sql = "?", params = [3.14159]
+    
+    Note:
+        As of version 0.3.6, float precision is properly preserved.
+        Previously, floats were rounded to integers, which has been fixed.
+    """
     if not is_number(value):
         raise TypeError("Numeric value must be a number. For other types, use text() or col().")
     return SQLExpression(value, "value", auto_parse_numbers=True)
@@ -2226,7 +2263,39 @@ def col(name: str, *, skip_validation:bool = False) -> SQLExpression:
     return SQLExpression(name, "column", auto_parse_numbers=False, skip_validation=skip_validation)
 
 def set_expr(values: Iterable, *, skip_validation:bool = False) -> SQLExpression:
-    """Create a set SQL expression."""
+    """
+    Create a set SQL expression for use in IN/NOT IN clauses.
+    
+    This function creates a set expression that can be used with the IN operator
+    in SQL conditions. It's designed for filtering queries, not for UPDATE SET clauses.
+    
+    For UPDATE SET clauses with expressions (e.g., `stock = stock + ?`), use regular
+    SQLExpression arithmetic operations instead.
+    
+    Args:
+        values: An iterable of values to include in the set
+        skip_validation: If True, skip validation of the values
+    
+    Returns:
+        SQLExpression: A set-type expression suitable for IN/NOT IN clauses
+    
+    Examples:
+        >>> # For WHERE ... IN clauses
+        >>> region = col("region")
+        >>> cond = region.is_in(["North", "South", "East"])
+        >>> # Or using set_expr directly
+        >>> regions = set_expr(["North", "South", "East"])
+        >>> cond = region.is_in(regions)
+        
+        >>> # For UPDATE with expressions, use arithmetic operations:
+        >>> stock = col("stock")
+        >>> new_value = stock + 10  # Creates an expression for `stock = stock + 10`
+    
+    Note:
+        This function is specifically for IN/NOT IN operations. For UPDATE SET clauses
+        that involve expressions (e.g., `stock = stock + ?`), construct the expression
+        using normal arithmetic operations on column objects.
+    """
     return SQLExpression(values, "set", auto_parse_numbers=False, skip_validation=skip_validation)
 
 def text(value: str) -> SQLExpression:
@@ -2237,8 +2306,42 @@ def text(value: str) -> SQLExpression:
 
 
 @normalize_args()
-def cols(*names: str, skip_validation:bool = False) -> SQLExpression:
-    """Create a list of column SQL expressions."""
+def cols(*names: str, skip_validation:bool = False) -> list[SQLExpression]:
+    """
+    Create a list of column SQL expressions.
+    
+    This function creates multiple column expressions at once, which is useful for
+    SELECT clauses or GROUP BY operations in external query builders like recordsQL.
+    
+    Note: ExpressQL focuses on expressions and conditions, not full query building.
+    For SELECT and GROUP BY operations, use a query builder like recordsQL that can
+    extract column names from SQLExpression objects.
+    
+    Args:
+        *names: Column names as separate arguments or comma-separated in a single string
+        skip_validation: If True, skip validation of column names
+    
+    Returns:
+        list[SQLExpression]: A list of column expressions
+    
+    Examples:
+        >>> # Multiple arguments
+        >>> age, name, email = cols("age", "name", "email")
+        
+        >>> # Comma-separated string
+        >>> columns = cols("age, name, email")
+        
+        >>> # For use with query builders (pseudocode):
+        >>> columns = cols("id", "name", "email")
+        >>> # Query builder should extract: [col.expression_value for col in columns]
+        >>> # Result: ["id", "name", "email"]
+    
+    Integration with Query Builders:
+        Query builders using ExpressQL should:
+        1. Check if argument is an SQLExpression with expression_type == "column"
+        2. Extract the column name using: expression.expression_value
+        3. Handle lists of expressions by extracting each column name
+    """
     
     if isinstance(names[0], str) and len(names) == 1:
         words = names[0].split(",")
