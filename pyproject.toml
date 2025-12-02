@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "expressql"
-version = "0.3.6"
+version = "0.3.7"
 description = "A Pythonic DSL for SQL conditions and expressions."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -92,3 +92,4 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+
