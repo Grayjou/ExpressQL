@@ -52,6 +52,23 @@ print(*log.placeholder_pair())
 ##[0.3.3] - 2025-06-13
 - Now table_name validation accepts accented characters
 
+## [0.3.6] - 2025-12-02
+### Fixed
+- **NULL Handling**: Fixed `SQLExpression.__eq__()` and `SQLExpression.__ne__()` to properly detect `None` values and generate `IS NULL` / `IS NOT NULL` SQL instead of `= ?` with `[None]` parameter
+- **Float Precision**: Fixed `num()` function to preserve decimal precision - floats are no longer silently rounded to integers. Updated `parse_number()` to preserve numeric types properly
+- **Type Safety**: Improved `is_number()` to handle `None` values gracefully (returns `False` without raising errors)
+
+### Improved
+- Enhanced documentation in `parse_number()` to clarify precision handling behavior
+- **Enhanced `num()` documentation**: Added comprehensive documentation explaining precision preservation behavior with examples
+- **Enhanced `set_expr()` documentation**: Added detailed documentation clarifying its use for IN/NOT IN clauses, with guidance on UPDATE SET expressions
+- **Enhanced `cols()` documentation**: Added documentation explaining integration with query builders like recordsQL, including how to extract column names from SQLExpression objects for SELECT and GROUP BY operations
+
+### Documentation
+- Clarified that `set_expr()` is for IN/NOT IN operations, not UPDATE SET clauses with expressions
+- Added guidance for query builder integration: how to extract column names from SQLExpression objects
+- Documented that ExpressQL focuses on expressions/conditions; full query building should use recordsQL or similar
+
 
 
 

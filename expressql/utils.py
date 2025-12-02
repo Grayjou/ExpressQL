@@ -224,13 +224,41 @@ def ensure_bracketed(string: str) -> str:
     return bracket_string_sandwich(string)
 
 def parse_number(s: str) -> Any:
-    """Try converting string to int or float; return original if both fail."""
-    for cast in (int, float):
-        try:
-            return cast(s)
-        except ValueError:
-            continue
-    return s
+    """
+    Try converting string to int or float; return original if both fail.
+    
+    Preserves numeric precision by:
+    - Converting to int only if the value is a whole number
+    - Converting to float if the value has decimal places
+    - Returns original value if not a number
+    
+    Args:
+        s: Value to parse (can be string, int, or float)
+        
+    Returns:
+        int, float, or original value
+    """
+    # Handle None explicitly
+    if s is None:
+        return None
+    
+    # If already a number, preserve its type
+    if isinstance(s, (int, float)):
+        return s
+    
+    # Try to parse as string
+    if not isinstance(s, str):
+        return s
+        
+    try:
+        # Try float first to preserve decimal precision
+        float_val = float(s)
+        # Convert to int only if it's a whole number
+        if float_val.is_integer():
+            return int(float_val)
+        return float_val
+    except (ValueError, AttributeError):
+        return s
 
 def is_between(s:str, start: str, end: str) -> bool:
     """

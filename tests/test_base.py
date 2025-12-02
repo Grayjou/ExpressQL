@@ -409,10 +409,58 @@ class TestEdgeCases:
         assert params == [""]
 
     def test_none_value_in_comparison(self):
-        """Test with None value."""
+        """Test with None value - should generate IS NULL."""
         email = col("email")
         cond = email == None
         sql, params = cond.placeholder_pair()
-        # Implementation may vary - just check it works
-        assert "email" in sql
-        # May use IS NULL or = ? depending on implementation
+        # Should generate IS NULL, not = ?
+        assert sql == "email IS NULL"
+        assert params == []
+    
+    def test_none_not_equal_comparison(self):
+        """Test != None comparison - should generate IS NOT NULL."""
+        email = col("email")
+        cond = email != None
+        sql, params = cond.placeholder_pair()
+        # Should generate IS NOT NULL, not != ?
+        assert sql == "email IS NOT NULL"
+        assert params == []
+    
+    def test_float_precision_in_num(self):
+        """Test that num() preserves float precision."""
+        value = num(3.14)
+        sql, params = value.placeholder_pair()
+        assert sql == "?"
+        assert params == [3.14]
+        assert isinstance(params[0], float)
+    
+    def test_float_vs_int_in_num(self):
+        """Test that num() distinguishes between floats and ints."""
+        # Integer value
+        int_value = num(3)
+        sql_int, params_int = int_value.placeholder_pair()
+        assert params_int == [3]
+        assert isinstance(params_int[0], int)
+        
+        # Float literal 3.0 preserves type (not converted since already float)
+        float_value = num(3.0)
+        sql_float, params_float = float_value.placeholder_pair()
+        assert params_float == [3.0]
+        assert isinstance(params_float[0], float)
+        
+        # String "3.0" is parsed: since 3.0.is_integer() is True, becomes int
+        string_value = num("3.0")
+        sql_str, params_str = string_value.placeholder_pair()
+        assert params_str == [3]
+        assert isinstance(params_str[0], int)
+        
+    def test_none_in_complex_condition(self):
+        """Test None handling in complex conditions."""
+        age = col("age")
+        email = col("email")
+        # Combine NULL check with other conditions
+        cond = (age > 18) & (email == None)
+        sql, params = cond.placeholder_pair()
+        assert "IS NULL" in sql
+        assert "age > ?" in sql
+        assert params == [18]
