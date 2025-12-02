@@ -382,9 +382,15 @@ class SQLExpression:
         return SQLCondition(self, comparator_class(SQLExpression.ensure_expression(other)))
 
     def __eq__(self, other: SQLInput) -> SQLCondition:
+        # Handle None comparison by converting to IS NULL
+        if other is None:
+            return self._is_null()
         return self._compare(EqualTo, other)
 
     def __ne__(self, other: SQLInput) -> SQLCondition:
+        # Handle None comparison by converting to IS NOT NULL
+        if other is None:
+            return self._is_not_null()
         return self._compare(NotEqualTo, other)
 
     def __lt__(self, other: SQLInput) -> SQLCondition:

@@ -52,6 +52,15 @@ print(*log.placeholder_pair())
 ##[0.3.3] - 2025-06-13
 - Now table_name validation accepts accented characters
 
+## [0.3.6] - 2025-12-02
+### Fixed
+- **NULL Handling**: Fixed `SQLExpression.__eq__()` and `SQLExpression.__ne__()` to properly detect `None` values and generate `IS NULL` / `IS NOT NULL` SQL instead of `= ?` with `[None]` parameter
+- **Float Precision**: Fixed `num()` function to preserve decimal precision - floats are no longer silently rounded to integers. Updated `parse_number()` to preserve numeric types properly
+- **Type Safety**: Improved `is_number()` to handle `None` values gracefully (returns `False` without raising errors)
+
+### Improved
+- Enhanced documentation in `parse_number()` to clarify precision handling behavior
+
 
 
 
