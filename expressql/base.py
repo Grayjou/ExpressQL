@@ -1218,6 +1218,10 @@ class Func(SQLExpression):
     def __init__(self, func_name: str, *args: SQLInput, tag: str = None, positive: bool = True, inverted: bool = False, alias=None):
         if not isinstance(func_name, str) or not func_name.strip():
             raise ValueError("Function name must be a non-empty string.")
+        if " " in func_name:
+            raise ValueError("Function name must not contain spaces.")
+        if ";" in func_name or "--" in func_name:
+            raise ValueError("Function name contains potentially unsafe characters.")
         self.func_name = func_name.upper()
         self.args = SQLExpression.ensure_expressions(args) if args else []
         self.tag = tag
