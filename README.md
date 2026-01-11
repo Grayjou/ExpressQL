@@ -175,6 +175,41 @@ These demonstrate arithmetic, chaining, null logic, function use, and condition 
 
 ---
 
+## 📚 Documentation
+
+Comprehensive documentation is available, built with Sphinx:
+
+### Building the Documentation
+
+To build the documentation locally:
+
+```bash
+# Install documentation dependencies
+pip install sphinx sphinx-rtd-theme sphinx-autodoc-typehints
+
+# Build HTML documentation
+cd docs
+make html
+
+# Open docs/build/html/index.html in your browser
+```
+
+### Documentation Contents
+
+- **Quick Start Guide**: Get up and running quickly
+- **User Guide**: Detailed guides on expressions, conditions, functions, and parsing
+- **API Reference**: Complete API documentation for all modules
+- **Examples**: Comprehensive examples for various use cases
+- **Contributing Guide**: How to contribute to the project
+
+The documentation includes:
+- Detailed explanations of all features
+- Code examples with expected output
+- Best practices and common patterns
+- Integration examples with popular databases
+
+---
+
 ## FAQ
 
 **Why doesn't expressQL include full query builders?**  
