@@ -26,6 +26,7 @@ from .expressions_parser import parse_expression
 from .parsing_utils import (remove_outer_brackets)
 import ast
 import re
+from typing import List, Tuple, Any
 from ..base import (
     SQLCondition, SQLChainCondition,
     AndCondition, OrCondition, NotCondition, SQLExpression
@@ -55,7 +56,7 @@ class ConditionToken(_ConditionToken):
 
 
 
-def split_top_level(s: str, sep: str) -> list[str]:
+def split_top_level(s: str, sep: str) -> List[str]:
     """
     Split s on the literal sep (e.g. 'AND' or 'OR'), but only at depth==0.
     Returns the list of trimmed segments.
@@ -84,7 +85,7 @@ def split_top_level(s: str, sep: str) -> list[str]:
     parts.append(s[last:].strip())
     return parts
 
-def find_lhs_expression(s: str, between_idx: int) -> tuple[int, str]:
+def find_lhs_expression(s: str, between_idx: int) -> Tuple[int, str]:
     """
     Given s and the index of the B in BETWEEN,
     return (lhs_start, lhs_expr), where lhs_expr is the
@@ -165,7 +166,7 @@ def find_top_level_and(s: str, start_idx: int) -> int:
     return -1
 
 
-def find_rhs_expression(s: str, and_pos: int) -> tuple[int, str]:
+def find_rhs_expression(s: str, and_pos: int) -> Tuple[int, str]:
     """
     Given the index of the 'A' in the AND,
     return (end_hi, hi_expr), where end_hi is the first index
@@ -377,7 +378,7 @@ def parse_condition(s: str, *, outer_brackets_removed:bool = False) -> SQLCondit
 
     if len(tokens) >= 3:
         # e.g. ['a', '<', 'b', '<', 'c + d']
-        items: list[object] = []
+        items: List[Any] = []
         for i, tok in enumerate(tokens):
             if i % 2 == 0:
                 # operand: parse as an expression
