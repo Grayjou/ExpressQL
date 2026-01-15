@@ -392,7 +392,7 @@ class TestEdgeCases:
     def test_boolean_value(self):
         """Test with boolean value."""
         active = col("active")
-        cond = active == True
+        cond = active == True  # noqa: E712
         sql, params = cond.placeholder_pair()
         assert params == [True]
 
@@ -406,7 +406,7 @@ class TestEdgeCases:
     def test_none_value_in_comparison(self):
         """Test with None value - should generate IS NULL."""
         email = col("email")
-        cond = email == None
+        cond = email == None  # noqa: E711
         sql, params = cond.placeholder_pair()
         # Should generate IS NULL, not = ?
         assert sql == "email IS NULL"
@@ -415,7 +415,7 @@ class TestEdgeCases:
     def test_none_not_equal_comparison(self):
         """Test != None comparison - should generate IS NOT NULL."""
         email = col("email")
-        cond = email != None
+        cond = email != None  # noqa: E711
         sql, params = cond.placeholder_pair()
         # Should generate IS NOT NULL, not != ?
         assert sql == "email IS NOT NULL"
@@ -454,7 +454,7 @@ class TestEdgeCases:
         age = col("age")
         email = col("email")
         # Combine NULL check with other conditions
-        cond = (age > 18) & (email == None)
+        cond = (age > 18) & (email == None)  # noqa: E711
         sql, params = cond.placeholder_pair()
         assert "IS NULL" in sql
         assert "age > ?" in sql
