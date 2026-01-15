@@ -18,9 +18,10 @@ Example:
 from .conditions_parser import parse_condition
 from .expressions_parser import parse_expression
 from ..base import SQLExpression, SQLCondition
+from typing import Union
 from .parsing_utils import remove_outer_brackets
 condition_items = set("=<>") | {"and", "or", "not", "is", "like", "in", "between", "exists"}
-def parse_expr_or_cond(s:str) -> SQLExpression | SQLCondition:
+def parse_expr_or_cond(s:str) -> Union[SQLExpression, SQLCondition]:
     """
     Parse a string into an SQL expression or condition.
 

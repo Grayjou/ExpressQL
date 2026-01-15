@@ -23,7 +23,7 @@ Example:
 
 from ..base import SQLExpression, SQLExpressionSum, SQLExpressionConcat, SQLExpressionProduct, Func, \
 SubQuery
-from typing import List
+from typing import List, Union, Tuple, Dict
 from ..utils import is_quoted, ensure_bracketed
 from .parsing_utils import extract_word_before, remove_outer_brackets, ensure_outer_bracketed, is_outer_bracketed
 from .subquery_placeholder import parametrize_subquery
@@ -112,7 +112,7 @@ class Token(_Token):
         )
 
 class TokenSum(_Token):
-    def __init__(self, items: list[Token, SQLExpression] = None,
+    def __init__(self, items: List[Union[Token, SQLExpression]] = None,
                  inverted: bool = False, positive: bool = True):
         self.items = items or []
         self.inverted = inverted
@@ -133,7 +133,7 @@ class TokenSum(_Token):
             return f"TokenSum(items={self.items!r})"
 
 class TokenMul(_Token):
-    def __init__(self, items: list[Token, SQLExpression] = None,
+    def __init__(self, items: List[Union[Token, SQLExpression]] = None,
                  inverted: bool = False, positive: bool = True):
         self.items = items or []
         self.inverted = inverted
@@ -154,7 +154,7 @@ class TokenMul(_Token):
             return f"TokenMul(items={self.items!r})"
 
 class TokenConcat(_Token):
-    def __init__(self, items: list[Token, SQLExpression] = None, 
+    def __init__(self, items: List[Union[Token, SQLExpression]] = None, 
                  inverted: bool = False, positive: bool = True):
         self.items = items or []
         self.inverted = inverted
@@ -210,7 +210,7 @@ def is_function_call(string: str) -> bool:
         return False
     return True
 
-def extract_replace_outermost_bracketed_withfunc(string: str, replacement:str) -> tuple[str, str]:
+def extract_replace_outermost_bracketed_withfunc(string: str, replacement:str) -> Tuple[str, str]:
     """
     Extracts and replaces the outermost bracketed expression in a given string.
     This function identifies the outermost pair of parentheses in the input string,
@@ -263,7 +263,7 @@ def tokenize_function(string, inverted: bool = False, positive: bool = True) -> 
 
     return TokenFunc(function_name=func_name, arguments=tokenized_args, inverted=inverted, positive=positive)
 
-def collect_outhermost_placeholders(string: str) -> tuple[str, dict[str, str]]:
+def collect_outhermost_placeholders(string: str) -> Tuple[str, Dict[str, str]]:
     outermost_tokens: dict[str, str] = {}
     i = 0
     repeated = False

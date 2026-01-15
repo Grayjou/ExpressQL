@@ -18,6 +18,8 @@ Example:
     '(test)'
 """
 
+from typing import Set, Tuple
+
 
 def ensure_bracketed(string: str) -> str:
     """
@@ -45,7 +47,7 @@ def bracket_string_sandwich(string: str) -> str:
     """
     return f"({string})"
 
-def extract_word_before(string: str, undesired: set[str], index: int) -> tuple[int, str]:
+def extract_word_before(string: str, undesired: Set[str], index: int) -> Tuple[int, str]:
     start = index - 1
     while start >= 0 and string[start] not in undesired:
         start -= 1
@@ -113,7 +115,7 @@ def remove_outer_brackets(s: str) -> str:
     return s
 
 
-def extract_replace_outermost_bracketed(string: str, replacement:str) -> tuple[str, str]:
+def extract_replace_outermost_bracketed(string: str, replacement:str) -> Tuple[str, str]:
     depth = 0
     start = None
     for i, char in enumerate(string):
