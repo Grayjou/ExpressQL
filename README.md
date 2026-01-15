@@ -213,7 +213,7 @@ The documentation includes:
 ## FAQ
 
 **Why doesn't expressQL include full query builders?**  
-This module focuses on expressions and conditions. For record queries with SELECT, UPDATE, etc, with joins and so on, I have made recordsQL and am working on tablesQLite
+This module focuses on expressions and conditions. For record queries with SELECT, UPDATE, etc, with joins and so on, I have made recordsql and am working on tablesQLite
 
 **Can you make the column name validation more permissive?**  
 In most cases, strict column validation prevents SQL injection or typos. However, I have a version that does a simpler check and allows passing forgiven characters. If it proves relevant, I will probably update it.

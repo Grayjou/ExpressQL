@@ -2320,10 +2320,10 @@ def cols(*names: str, skip_validation:bool = False) -> List[SQLExpression]:
     Create a list of column SQL expressions.
     
     This function creates multiple column expressions at once, which is useful for
-    SELECT clauses or GROUP BY operations in external query builders like recordsQL.
+    SELECT clauses or GROUP BY operations in external query builders like recordsql.
     
     Note: ExpressQL focuses on expressions and conditions, not full query building.
-    For SELECT and GROUP BY operations, use a query builder like recordsQL that can
+    For SELECT and GROUP BY operations, use a query builder like recordsql that can
     extract column names from SQLExpression objects.
     
     Args:
