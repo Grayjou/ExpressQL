@@ -264,7 +264,7 @@ def tokenize_function(string, inverted: bool = False, positive: bool = True) -> 
     return TokenFunc(function_name=func_name, arguments=tokenized_args, inverted=inverted, positive=positive)
 
 def collect_outhermost_placeholders(string: str) -> Tuple[str, Dict[str, str]]:
-    outermost_tokens: dict[str, str] = {}
+    outermost_tokens: Dict[str, str] = {}
     i = 0
     repeated = False
     while "(" in string and ")" in string:
@@ -282,7 +282,7 @@ def collect_outhermost_placeholders(string: str) -> Tuple[str, Dict[str, str]]:
         i += 1
     return string, outermost_tokens
 
-def replace_placeholders(parts: List[str], outermost_tokens: dict[str,str]) -> List[str]:
+def replace_placeholders(parts: List[str], outermost_tokens: Dict[str, str]) -> List[str]:
     for p, part in enumerate(parts):
         found = None
         for key, value in outermost_tokens.items():
