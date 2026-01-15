@@ -637,7 +637,7 @@ class SQLArithmeticOperation(SQLExpression):
     operation_name = None
     def __new__(cls, expressions: List[SQLExpression], positive: bool = True, inverted: bool = False, *, alias=None, bruteforce = False):
 
-        if isinstance(expressions, SQLInput):
+        if not isinstance(expressions, list):
             expressions = [SQLExpression.ensure_expression(expressions)]
 
         symbol = cls.symbol
@@ -1692,7 +1692,7 @@ class SQLCondition:
 
         if not self.comparison.attatchable:
             raise ValueError(f"Cannot use {op} operator on non-attachable comparison.")
-        if not isinstance(other, SQLInput):
+        if not isinstance(other, (SQLExpression, str, int, float)):
             raise TypeError(f"Right operand must be SQLInput, got {type(other).__name__}.")
         new_chain = SQLChainCondition.from_condition(self, copy_items=True)
         if op not in new_chain._valid_comparators(new_chain.behaviour):
@@ -1877,7 +1877,7 @@ class SQLChainCondition(SQLCondition):
                 fails.append((comparator, None))
                 break
             target = items[i + 1]
-            if isinstance(target, SQLInput):
+            if isinstance(target, (SQLExpression, str, int, float)):
                 pairs.append((comparator, target))
             elif isinstance(target, SQLChainCondition):
                 pairs.extend(self._pairs_from_comparator_and_chain(comparator, target))
@@ -1930,7 +1930,7 @@ class SQLChainCondition(SQLCondition):
         
         copy_self = self.copy()
         
-        if isinstance(other, SQLInput):
+        if isinstance(other, (SQLExpression, str, int, float)):
             comparison = get_comparison(operator, other)
             copy_self.attatch_comparisons(comparison)
         elif isinstance(other, SQLChainCondition):
