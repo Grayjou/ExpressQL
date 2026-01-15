@@ -1,7 +1,13 @@
 ```markdown
-# expressQL — Build complex SQL expressions in pure Python with safe, intuitive syntax
+# expressql — Build complex SQL expressions in pure Python with safe, intuitive syntax
 
-**expressQL** is a flexible, Pythonic Domain-Specific Language (DSL) for constructing complex SQL conditions and expressions safely and expressively.  
+[![CI](https://github.com/Grayjou/expressql/actions/workflows/ci.yml/badge.svg)](https://github.com/Grayjou/expressql/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/expressql.svg)](https://pypi.org/project/expressql/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/expressql.svg)](https://pypi.org/project/expressql/)
+[![Python versions](https://img.shields.io/pypi/pyversions/expressql.svg)](https://pypi.org/project/expressql/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**expressql** is a flexible, Pythonic Domain-Specific Language (DSL) for constructing complex SQL conditions and expressions safely and expressively.  
 It is designed to reduce boilerplate, prevent common SQL mistakes, and allow arithmetic, logical, and chained comparisons directly in Python syntax.
 
 ---
@@ -212,7 +218,7 @@ The documentation includes:
 
 ## FAQ
 
-**Why doesn't expressQL include full query builders?**  
+**Why doesn't expressql include full query builders?**  
 This module focuses on expressions and conditions. For record queries with SELECT, UPDATE, etc, with joins and so on, I have made recordsql and am working on tablesQLite
 
 **Can you make the column name validation more permissive?**  
@@ -223,7 +229,7 @@ The conditions wrap themselves in brackets to pass it to other functions that mi
 
 > **🔥 Tip**  
 > If you're using this in a larger query builder or ORM, let me know —  
-> I might have an `expressQL-querybuilder` in the works 👀.
+> I might have an `expressql-querybuilder` in the works 👀.
 
 ---
 
@@ -235,9 +241,9 @@ I'm especially interested in ideas for better query builders and integrations wi
 
 ## Roadmap
 
-- 📌 More built-in SQL functions (`expressQL.functions`)
+- 📌 More built-in SQL functions (`expressql.functions`)
 - 📌 Chain-aware logical optimizations
-- 📌 Full Query Builder integration (maybe `expressQL-querybuilder`)
+- 📌 Full Query Builder integration (maybe `expressql-querybuilder`)
 - 📌 Async support and better placeholder systems (for more DB engines)
 - 📌 Better error tracing and SQL preview options
 
