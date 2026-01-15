@@ -1469,8 +1469,13 @@ class InSubquery(SQLComparison):
 
     @staticmethod
     def _validate_subquery_safe(subquery: str) -> None:
-        import sqlparse
-        from sqlparse.tokens import DML
+        try:
+            import sqlparse
+            from sqlparse.tokens import DML
+        except ImportError:
+            import logging
+            logging.warning("sqlparse is not installed. Subquery validation is skipped.")
+            return
         subquery = subquery.strip("()")
         parsed = sqlparse.parse(subquery)
         if not parsed:
