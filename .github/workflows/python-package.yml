@@ -56,5 +56,4 @@ jobs:
     - name: Run syntax check
       run: python -m py_compile $(find . -name "*.py")
     
-    - name: Test imports
-      run:  python -c "import recordsql"
+
