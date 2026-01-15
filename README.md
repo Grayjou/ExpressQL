@@ -1,4 +1,3 @@
-```markdown
 # expressql — Build complex SQL expressions in pure Python with safe, intuitive syntax
 
 [![CI](https://github.com/Grayjou/expressql/actions/workflows/ci.yml/badge.svg)](https://github.com/Grayjou/expressql/actions/workflows/ci.yml)
