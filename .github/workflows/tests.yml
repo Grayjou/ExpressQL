@@ -3,19 +3,43 @@ name: CI
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - '**. md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '. gitignore'
+      - '*.txt'
+      - '*. rst'
+      - '*.bat'
+      - '*.sh'
+      - 'build_docs.*'
+      - 'publish.*'
+      - '. readthedocs.yaml'
   pull_request: 
     branches: [ main, master ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - '*.txt'
+      - '*.rst'
+      - '*.bat'
+      - '*.sh'
+      - 'build_docs.*'
+      - 'publish.*'
+      - '.readthedocs.yaml'
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out code
+    runs-on:  ubuntu-latest
+    steps: 
+    - name:  Check out code
       uses: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v5
-      with:
+      with: 
         python-version: '3.11'
     
     - name: Install linting tools
@@ -34,7 +58,7 @@ jobs:
           # Reduce redundant jobs - only test sqlparse variations on 3.11 and 3.13
           - python-version: '3.12'
             sqlparse: false
-          - python-version: '3.14'
+          - python-version:  '3.14'
             sqlparse: false
     
     name: Python ${{ matrix.python-version }} ${{ matrix.sqlparse && 'with' || 'without' }} sqlparse
@@ -45,7 +69,7 @@ jobs:
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
-      with: 
+      with:  
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
     
@@ -56,11 +80,11 @@ jobs:
       run: pip install pytest pytest-cov
     
     - name: Install optional dependencies
-      if: matrix.sqlparse
+      if: matrix. sqlparse
       run: pip install sqlparse
     
-    - name:  Run tests
+    - name: Run tests
       run: pytest -v --cov=expressql --cov-report=term-missing
     
-    - name: Test import
+    - name:  Test import
       run: python -c "import expressql; from expressql import col, cols, Func"
