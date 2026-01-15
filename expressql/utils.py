@@ -27,11 +27,9 @@ Example:
     "'test'"
 """
 
-from typing import Any, Dict, Set, Union , Callable, Iterable, List
+from typing import Any, Callable, List
 from collections.abc import Iterable
-from .exceptions import ForbiddenCharacterError
 from functools import wraps
-import re
 # Constants
 forbidden_chars = {
     " ", ".", ",", ";", ":", "'", '"', "\\", "/", "|", "?", "!", "@",

@@ -1,5 +1,4 @@
 """Tests for validation functions."""
-import pytest
 from expressql.validators import is_number, get_forbidden_words_in
 
 
@@ -102,7 +101,7 @@ class TestGetForbiddenWordsIn:
     def test_partial_match(self):
         """Test that partial matches are not detected."""
         # "SELECTED" contains "SELECT" but should not match
-        result = get_forbidden_words_in("SELECTED INFORMATION")
+        get_forbidden_words_in("SELECTED INFORMATION")
         # This depends on implementation - it may or may not match
         # The test documents current behavior
 

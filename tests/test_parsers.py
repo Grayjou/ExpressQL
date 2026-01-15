@@ -1,7 +1,6 @@
 """Tests for expressql parsers module."""
-import pytest
 from expressql.parsers import parse_expression, parse_condition, parse_expr_or_cond
-from expressql import SQLExpression, SQLCondition, col, num
+from expressql import SQLExpression, SQLCondition, col
 
 
 class TestExpressionParser:

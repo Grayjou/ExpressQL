@@ -725,7 +725,6 @@ class SQLArithmeticOperation(SQLExpression):
 
     def __init__(self, expressions: List[SQLExpression], positive: bool = True, inverted: bool = False, *, alias = None, bruteforce=False):
         symbol = self.__class__.symbol
-        neutral = self.__class__.neutral
         # Expressions were folded in __new__
         flattened = getattr(self, '_precomputed_expressions', expressions)
         self.symbol = symbol
@@ -919,7 +918,6 @@ class SQLExpressionProduct(SQLArithmeticOperation):
         if not self.expressions:
             return "0"
         pos = self.positive
-        fragments = []
         first = self.expressions[0]
         numerator = []
         denominator = []
@@ -1703,11 +1701,20 @@ class SQLCondition:
         new_chain.attatch_items(other, first_comparator=op)
         return new_chain
     # Relational operators
-    __lt__ = lambda self, other: self._relational_operator(other, "<")
-    __le__ = lambda self, other: self._relational_operator(other, "<=")
-    __gt__ = lambda self, other: self._relational_operator(other, ">")
-    __ge__ = lambda self, other: self._relational_operator(other, ">=")
-    __eq__ = lambda self, other: self._relational_operator(other, "=")
+    def __lt__(self, other):
+        return self._relational_operator(other, "<")
+    
+    def __le__(self, other):
+        return self._relational_operator(other, "<=")
+    
+    def __gt__(self, other):
+        return self._relational_operator(other, ">")
+    
+    def __ge__(self, other):
+        return self._relational_operator(other, ">=")
+    
+    def __eq__(self, other):
+        return self._relational_operator(other, "=")
     def flipped(self) -> SQLCondition:
         """Flip the condition's comparison."""
         if not self.comparison.attatchable:

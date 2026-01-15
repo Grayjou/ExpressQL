@@ -40,7 +40,7 @@ from .parsers import parse_expr_or_cond, parse_expression, parse_condition
 get_condition = get_comparison  # Alias for backward compatibility
 
 __all__ = [
-    "SQLCondition", "SQLComparison",
+    "SQLCondition", "SQLComparison", "EqualTo", "LessThan", "GreaterThan", "LessOrEqualThan", "GreaterOrEqualThan", "NotEqualTo", "Between", "In",
     "AndCondition", "OrCondition", "NotCondition", "get_condition", "no_condition",
     "parse_number", "format_sql_value", "col", "IsNull", "IsNotNull", "forbidden_chars",
     "TrueCondition", "FalseCondition", "pk_condition", "forbidden_words", "set_expr",

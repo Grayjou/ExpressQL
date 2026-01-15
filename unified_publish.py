@@ -239,7 +239,7 @@ def get_token(env: str, config: PublishConfig) -> Optional[str]:
     # 3. Check system keyring
     token = get_token_from_keyring(full_env)
     if token:
-        print_info(f"Using token from system keyring")
+        print_info("Using token from system keyring")
         return token
     
     return None

@@ -1,4 +1,4 @@
-from expressql import col, cols, num, text, Func, SQLCondition, AndCondition, OrCondition, SQLChainCondition
+from expressql import col, cols, Func, SQLChainCondition
 
 def arithmetic_expressions():
     print("== Complex Arithmetic Expressions ==")

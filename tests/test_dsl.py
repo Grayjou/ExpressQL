@@ -1,7 +1,7 @@
 """Tests for DSL module."""
 import pytest
 from expressql.dsl import pk_condition, primary_key_condition, expressions_guide, conditions_guide
-from expressql import col, cols
+from expressql import cols
 
 
 class TestPrimaryKeyCondition:

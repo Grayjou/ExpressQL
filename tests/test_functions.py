@@ -1,6 +1,6 @@
 """Tests for functions module."""
 import pytest
-from expressql import Func, col
+from expressql import col
 import expressql.functions as f
 
 

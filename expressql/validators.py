@@ -52,7 +52,6 @@ def validate_subquery_safe(where: str) -> None:
     """
     
     import sqlparse
-    from sqlparse.sql import Identifier, IdentifierList
     from sqlparse.tokens import DML
     parsed = sqlparse.parse(where)
     if not parsed:
@@ -75,34 +74,6 @@ def validate_subquery_safe(where: str) -> None:
 
     # You could do even *deeper* validation, but this is already good for now.
 
-def get_forbidden_words_in(name: str):
-    """
-    Identifies SQL keywords present in the given string.
-    This function checks if any SQL reserved keywords are present in the 
-    provided string `name`. It performs a case-insensitive search and 
-    returns a list of all matching keywords.
-    Args:
-        name (str): The input string to be checked for SQL keywords.
-    Returns:
-        list: A list of SQL keywords found in the input string. If no 
-        keywords are found, an empty list is returned.
-    Example:
-        >>> get_forbidden_words_in("SELECT name FROM users")
-        ['SELECT', 'FROM']
-    """
-
-    keywords = {
-        "SELECT", "FROM", "WHERE", "TABLE", "INSERT", "UPDATE", "DELETE",
-        "CREATE", "DROP", "ALTER", "JOIN", "ON", "AS", "AND", "OR", "NOT",
-        "IN", "IS", "NULL", "VALUES", "SET", "GROUP", "BY", "ORDER", "HAVING",
-        "LIMIT", "OFFSET", "DISTINCT"
-    }
-    found = []
-    for keyword in keywords:
-        if re.search(rf'\b{keyword}\b', name, flags=re.IGNORECASE):
-            found.append(keyword)
-    return found
-        
 def validate_name_regex(
 
     name: str, *, 

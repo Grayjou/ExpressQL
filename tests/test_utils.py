@@ -1,8 +1,7 @@
 """Tests for utility functions."""
-import pytest
 from expressql.utils import (
     parse_number, format_sql_value, forbidden_chars, forbidden_words,
-    normalize_args, _normalize_args, bracket_string_sandwich,
+    _normalize_args, bracket_string_sandwich,
     ensure_bracketed, merge_placeholders
 )
 

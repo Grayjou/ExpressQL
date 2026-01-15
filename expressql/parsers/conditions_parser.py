@@ -22,15 +22,13 @@ Example:
     >>> sql, params = cond.placeholder_pair()
 """
 
-from .expressions_parser import parse_expression, extract_replace_outermost_bracketed_withfunc
-from .parsing_utils import (is_outer_bracketed,
-     bracket_string_sandwich, extract_replace_outermost_bracketed,
-     remove_outer_brackets)
+from .expressions_parser import parse_expression
+from .parsing_utils import (remove_outer_brackets)
 import ast
 import re
 from ..base import (
     SQLCondition, SQLChainCondition,
-    AndCondition, OrCondition, NotCondition, SubQuery, SQLExpression
+    AndCondition, OrCondition, NotCondition, SQLExpression
 )
 from .subquery_placeholder import parametrize_subquery
 from ..utils import is_quoted
@@ -50,7 +48,7 @@ class ConditionToken(_ConditionToken):
     
     def _can_simple_resolve(self) -> bool:
         value = self.value.strip()
-        check = not any(char in value.upper() for char in ("AND", "OR", "NOT", "BETWEEN", "LIKE", "IN", "IS", "EXISTS"))
+        return not any(char in value.upper() for char in ("AND", "OR", "NOT", "BETWEEN", "LIKE", "IN", "IS", "EXISTS"))
 
     def resolve(self) -> SQLCondition:
         return parse_condition(self.value)
@@ -71,9 +69,11 @@ def split_top_level(s: str, sep: str) -> list[str]:
     while i < len(s):
         c = s[i]
         if c == "(":
-            depth += 1; i += 1
+            depth += 1
+            i += 1
         elif c == ")":
-            depth -= 1; i += 1
+            depth -= 1
+            i += 1
         # match sep at depth 0
         elif depth == 0 and upper[i : i + L] == sep:
             parts.append(s[last : i].strip())

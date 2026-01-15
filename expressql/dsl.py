@@ -1,6 +1,5 @@
-from typing import Any, Union, Dict
-from .base import (SQLCondition, AndCondition, OrCondition, NotCondition, IsNull, IsNotNull, TrueCondition, 
-FalseCondition, SQLExpression, col, cols, num, text, set_expr, Func, text_exprs)
+from typing import Dict
+from .base import (SQLCondition, AndCondition, col, cols, Func, text_exprs)
 
 """
 expressQL DSL — quick access to expressions, conditions, and helper guides.
@@ -33,9 +32,9 @@ def expressions_guide():
     pi, e = cols("PI", "E")
 
     #To use functions in SQL you can use Func, both custom and built-in
-    my_func = Func("MY_FUNCTION", col1, col2, col3)
+    #my_func = Func("MY_FUNCTION", col1, col2, col3)
     #You can also use built-in functions like SUM, AVG, etc.
-    sum_func = Func("SUM", col1)
+    #sum_func = Func("SUM", col1)
 
     #You can also directly import any builtin function from functions.py
     #from expressQL.functions import SUM
