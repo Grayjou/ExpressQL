@@ -33,8 +33,8 @@ It is designed to reduce boilerplate, prevent common SQL mistakes, and allow ari
 **expressql** is part of a complete SQL toolkit for Python:
 
 - **expressql** (this package) - Build SQL expressions and conditions with safe, intuitive syntax
-- **[recordsQL](https://github.com/Grayjou/recordsQL)** - Full query builder for DML operations (SELECT, INSERT, UPDATE, DELETE, JOIN, WITH)
-- **[tablesQLite](https://github.com/Grayjou/tablesQLite)** - SQLite schema management and DDL operations (CREATE TABLE, ALTER TABLE, migrations)
+- **[recordsql](https://github.com/Grayjou/recordsql)** - Full query builder for DML operations (SELECT, INSERT, UPDATE, DELETE, JOIN, WITH)
+- **[tablesqlite](https://github.com/Grayjou/tablesqlite)** - SQLite schema management and DDL operations (CREATE TABLE, ALTER TABLE, migrations)
 
 Use them independently or together for a complete, type-safe SQL solution.
 
@@ -233,8 +233,8 @@ The documentation includes:
 
 **Why doesn't expressql include full query builders?**  
 expressql focuses specifically on expressions and conditions - the building blocks of SQL queries. For complete query building: 
-- Use **[recordsQL](https://pypi.org/project/recordsql/)** for DML operations (SELECT, INSERT, UPDATE, DELETE)
-- Use **[tablesQLite](https://pypi.org/project/tablesqlite/)** for DDL operations (CREATE TABLE, schema management)
+- Use **[recordsql](https://pypi.org/project/recordsql/)** for DML operations (SELECT, INSERT, UPDATE, DELETE)
+- Use **[tablesqlite](https://pypi.org/project/tablesqlite/)** for DDL operations (CREATE TABLE, schema management)
 
 This modular approach lets you use only what you need, or combine all three for a complete SQL solution.
 

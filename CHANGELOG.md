@@ -12,7 +12,7 @@ expressql is now production-ready! This release marks API stability and commitme
 
 ### Added
 - **Python 3.8 - 3.14 support** with full CI/CD testing across all versions
-- Ecosystem documentation linking to recordsQL and tablesQLite
+- Ecosystem documentation linking to recordsql and tablesqlite
 
 ### Changed
 - Updated development status from Beta to Production/Stable
