@@ -9,6 +9,8 @@
 **expressql** is a flexible, Pythonic Domain-Specific Language (DSL) for constructing complex SQL conditions and expressions safely and expressively.  
 It is designed to reduce boilerplate, prevent common SQL mistakes, and allow arithmetic, logical, and chained comparisons directly in Python syntax.
 
+**Supports Python 3.8 through 3.14** with comprehensive test coverage across all versions.
+
 ---
 
 ## 🚀 Features
@@ -23,6 +25,18 @@ It is designed to reduce boilerplate, prevent common SQL mistakes, and allow ari
 ✅ Fluent API for advanced condition building  
 ✅ **Parsing of SQL-like strings into expressions and conditions**  
 ✅ **Automatic expansion of `BETWEEN` clauses into composite comparisons**
+
+---
+
+## 🔗 Ecosystem
+
+**expressql** is part of a complete SQL toolkit for Python:
+
+- **expressql** (this package) - Build SQL expressions and conditions with safe, intuitive syntax
+- **[recordsQL](https://github.com/Grayjou/recordsQL)** - Full query builder for DML operations (SELECT, INSERT, UPDATE, DELETE, JOIN, WITH)
+- **[tablesQLite](https://github.com/Grayjou/tablesQLite)** - SQLite schema management and DDL operations (CREATE TABLE, ALTER TABLE, migrations)
+
+Use them independently or together for a complete, type-safe SQL solution.
 
 ---
 
@@ -218,7 +232,11 @@ The documentation includes:
 ## FAQ
 
 **Why doesn't expressql include full query builders?**  
-This module focuses on expressions and conditions. For record queries with SELECT, UPDATE, etc, with joins and so on, I have made recordsql and am working on tablesQLite
+expressql focuses specifically on expressions and conditions - the building blocks of SQL queries. For complete query building: 
+- Use **[recordsQL](https://pypi.org/project/recordsql/)** for DML operations (SELECT, INSERT, UPDATE, DELETE)
+- Use **[tablesQLite](https://pypi.org/project/tablesqlite/)** for DDL operations (CREATE TABLE, schema management)
+
+This modular approach lets you use only what you need, or combine all three for a complete SQL solution.
 
 **Can you make the column name validation more permissive?**  
 In most cases, strict column validation prevents SQL injection or typos. However, I have a version that does a simpler check and allows passing forgiven characters. If it proves relevant, I will probably update it.
@@ -240,11 +258,10 @@ I'm especially interested in ideas for better query builders and integrations wi
 
 ## Roadmap
 
-- 📌 More built-in SQL functions (`expressql.functions`)
-- 📌 Chain-aware logical optimizations
-- 📌 Full Query Builder integration (maybe `expressql-querybuilder`)
-- 📌 Async support and better placeholder systems (for more DB engines)
-- 📌 Better error tracing and SQL preview options
+- 🌌 More built-in SQL functions (`expressql.functions`)
+- 🌌 Chain-aware logical optimizations
+- 🌌 Better error tracing and SQL preview options
+- 🌌 Performance optimizations for complex expression trees
 
 ## License
 

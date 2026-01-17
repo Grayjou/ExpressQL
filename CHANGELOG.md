@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.0] - 2026-01-17
+
+### 🎉 First Stable Release
+
+expressql is now production-ready! This release marks API stability and commitment to backward compatibility.
+
+### Added
+- **Python 3.8 - 3.14 support** with full CI/CD testing across all versions
+- Ecosystem documentation linking to recordsQL and tablesQLite
+
+### Changed
+- Updated development status from Beta to Production/Stable
+- Comprehensive documentation updates with ecosystem links
+- Clarified package scope and integration patterns
+
+### Notes
+- All core features from 0.3.x are stable and tested
+- Comprehensive test coverage with pytest
+- Full Sphinx documentation available
+- Zero open issues
+
+## [0.3.9] - 2026-01-15
+
+### Changed
+- Fix negation features
+- Modernize project structure with tests and docstrings
+- Fix NotIn.__new__ recursion bug
+- Fix NULL comparison, float precision, and API documentation
+- Improve condition parsing for IN, LIKE, and BETWEEN
+- Add comprehensive Sphinx documentation
+
+**Full Changelog**: https://github.com/Grayjou/expressql/commits/0.3.9
+
 ## [0.1.0] - 2025-05-04
 ### Added
 - Initial release of `expressql`.
