@@ -451,6 +451,14 @@ class SQLExpression:
 
     # --- SQL Condition Methods ---
 
+    def is_true(self) -> SQLCondition:
+        """To avoid linter warnings about '== True', as it assumes a boolean return type."""
+        return (self == True) #noqa: E712 
+    
+    def is_false(self) -> SQLCondition:
+        """To avoid linter warnings about '== False', as it assumes a boolean return type."""
+        return (self == False) #noqa: E712
+
     def between(self, left: SQLInput, right: SQLInput) -> SQLCondition:
         left_expr = SQLExpression.ensure_expression(left)
         right_expr = SQLExpression.ensure_expression(right)
@@ -462,10 +470,13 @@ class SQLExpression:
     def _is_not_null(self) -> SQLCondition:
         return SQLCondition(self, IsNotNull())
 
-    # Both property and callable alias
-    is_null = property(_is_null)
-    is_not_null = property(_is_not_null)
-
+    @property
+    def null(self) -> SQLCondition:
+        return self._is_null()
+    
+    @property
+    def not_null(self) -> SQLCondition:
+        return self._is_not_null()
     # Method alias to support calling
     is_null = _is_null
     is_not_null = _is_not_null

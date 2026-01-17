@@ -406,7 +406,7 @@ class TestEdgeCases:
     def test_none_value_in_comparison(self):
         """Test with None value - should generate IS NULL."""
         email = col("email")
-        cond = email == None  # noqa: E711
+        cond = email.is_null()
         sql, params = cond.placeholder_pair()
         # Should generate IS NULL, not = ?
         assert sql == "email IS NULL"
@@ -415,7 +415,7 @@ class TestEdgeCases:
     def test_none_not_equal_comparison(self):
         """Test != None comparison - should generate IS NOT NULL."""
         email = col("email")
-        cond = email != None  # noqa: E711
+        cond = email.is_not_null()
         sql, params = cond.placeholder_pair()
         # Should generate IS NOT NULL, not != ?
         assert sql == "email IS NOT NULL"
